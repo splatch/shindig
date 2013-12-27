@@ -18,6 +18,7 @@
  */
 package org.apache.shindig.common.cache;
 
+import org.apache.shindig.api.cache.Cache;
 import org.apache.shindig.common.util.FakeTimeSource;
 
 import org.junit.Assert;

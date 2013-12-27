@@ -33,8 +33,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.cache.NullCache;
 import org.apache.shindig.gadgets.JsCompileMode;
 import org.apache.shindig.gadgets.RenderingContext;

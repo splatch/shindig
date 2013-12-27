@@ -18,11 +18,12 @@
  */
 package org.apache.shindig.common.cache;
 
+import java.util.concurrent.ConcurrentMap;
+
+import org.apache.shindig.api.cache.Cache;
 import org.apache.shindig.common.util.TimeSource;
 
 import com.google.common.collect.MapMaker;
-
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * A cache that uses a soft expiration policy. Entries will be kept around for potentially as long
@@ -40,7 +41,7 @@ public class SoftExpiringCache<K, V> {
 
   // We keep a weak reference to the value stored in the cache so that when the value in the actual
   // cache is removed, we should lose it here as well.
-  private final ConcurrentMap<V, Long> expirationTimes;
+  private final ConcurrentMap<V, Long> expirationTimes = new MapMaker().weakKeys().makeMap();
   private TimeSource timeSource;
 
   /**
@@ -51,7 +52,6 @@ public class SoftExpiringCache<K, V> {
    */
   public SoftExpiringCache(Cache<K, V>  cache) {
     this.cache = cache;
-    expirationTimes = new MapMaker().weakKeys().makeMap();
     timeSource = new TimeSource();
   }
 

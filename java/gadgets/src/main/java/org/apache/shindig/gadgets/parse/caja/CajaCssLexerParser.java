@@ -18,8 +18,8 @@
  */
 package org.apache.shindig.gadgets.parse.caja;
 
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.util.HashUtil;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpResponse;

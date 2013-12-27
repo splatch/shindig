@@ -18,6 +18,8 @@
  */
 package org.apache.shindig.common.cache;
 
+import org.apache.shindig.api.cache.Cache;
+
 /**
  * Cache implementation that does nothing.
  */

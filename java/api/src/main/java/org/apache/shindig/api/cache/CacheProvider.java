@@ -16,19 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.common.cache.ehcache;
-
-import org.apache.shindig.common.cache.CacheProvider;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
+package org.apache.shindig.api.cache;
 
 /**
- * Creates a module to supply a EhCache Provider
+ * Interface for Shindig caches.
  */
-public class EhCacheModule extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(CacheProvider.class).to(EhCacheCacheProvider.class).in(Scopes.SINGLETON);
-  }
+public interface CacheProvider {
+  /**
+   * Create a named single instance cache in this cache manager, if the cache
+   * already exists, return it if the name is null, a new anonymous cache is
+   * created
+   *
+   * @param <K>  The Key type for the cache
+   * @param <V>  The pay-load type
+   * @param name The non-null name of the cache.
+   * @return A Cache configured to the required specification.
+   */
+  <K, V> Cache<K, V> createCache(String name);
 }

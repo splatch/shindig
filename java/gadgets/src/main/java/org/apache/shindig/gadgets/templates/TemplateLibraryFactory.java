@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.apache.shindig.auth.AnonymousSecurityToken;
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.util.CharsetUtil;
 import org.apache.shindig.common.util.HashUtil;

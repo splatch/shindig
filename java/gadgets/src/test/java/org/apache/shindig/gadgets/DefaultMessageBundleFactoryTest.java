@@ -25,8 +25,8 @@ import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.cache.LruCacheProvider;
 import org.apache.shindig.common.testing.ImmediateExecutorService;
 import org.apache.shindig.common.uri.Uri;

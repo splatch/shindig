@@ -22,8 +22,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlException;
 import org.apache.shindig.common.xml.XmlUtil;

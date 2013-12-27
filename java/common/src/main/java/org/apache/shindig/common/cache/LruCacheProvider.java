@@ -18,6 +18,14 @@
  */
 package org.apache.shindig.common.cache;
 
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
+import org.apache.shindig.common.logging.i18n.MessageKeys;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MapMaker;
 import com.google.inject.ConfigurationException;
@@ -26,12 +34,6 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.shindig.common.logging.i18n.MessageKeys;
 
 /**
  * A cache provider that always produces LRU caches.

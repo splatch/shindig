@@ -18,6 +18,8 @@
  */
 package org.apache.shindig.gadgets.js;
 
+import net.sf.ehcache.pool.sizeof.annotations.IgnoreSizeOf;
+
 import org.apache.shindig.gadgets.features.FeatureRegistry.FeatureBundle;
 import org.apache.shindig.gadgets.features.FeatureResource;
 
@@ -29,7 +31,9 @@ import org.apache.shindig.gadgets.features.FeatureResource;
 public class JsContent {
   private final String content;
   private final String source;
+  @IgnoreSizeOf
   private final FeatureBundle bundle;
+  @IgnoreSizeOf
   private final FeatureResource resource;
   private final boolean noCompile;
 

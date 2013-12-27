@@ -29,15 +29,15 @@ import org.apache.shindig.gadgets.render.RenderingResults;
 import org.apache.shindig.gadgets.uri.IframeUriManager;
 import org.apache.shindig.gadgets.uri.UriStatus;
 import org.apache.shindig.gadgets.uri.UriCommon.Param;
+import org.apache.shindig.logging.I18nLogger;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,8 +52,7 @@ public class GadgetRenderingServlet extends InjectedServlet {
   static final int DEFAULT_CACHE_TTL = 60 * 5;
 
   //class name for logging purpose
-  private static final String classname = GadgetRenderingServlet.class.getName();
-  private static final Logger LOG = Logger.getLogger(classname,MessageKeys.MESSAGES);
+  private static final Logger LOG = I18nLogger.getLogger(GadgetRenderingServlet.class, MessageKeys.BUNDLE);
 
   protected transient Renderer renderer;
   protected transient IframeUriManager iframeUriManager;
@@ -149,9 +148,7 @@ public class GadgetRenderingServlet extends InjectedServlet {
           ttl = Integer.parseInt(ttlStr);
         } catch (NumberFormatException e) {
           // Ignore malformed TTL value
-          if (LOG.isLoggable(Level.INFO)) {
-            LOG.logp(Level.INFO, classname, "onOkRenderingResultsStatus", MessageKeys.MALFORMED_TTL_VALUE, new Object[] {ttlStr});
-          }
+          LOG.info(MessageKeys.MALFORMED_TTL_VALUE, ttlStr);
         }
       }
       HttpUtil.setCachingHeaders(resp, ttl, true);

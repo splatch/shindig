@@ -32,8 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.util.HashUtil;
 import org.apache.shindig.gadgets.features.ApiDirective;
 import org.apache.shindig.gadgets.features.FeatureRegistry.FeatureBundle;

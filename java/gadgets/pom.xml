@@ -145,13 +145,6 @@
     <dependency>
       <groupId>org.apache.shindig</groupId>
       <artifactId>shindig-common</artifactId>
-      <classifier>${shindig.jdk.classifier}</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shindig</groupId>
-      <artifactId>shindig-common</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
 
     <!--
@@ -161,13 +154,22 @@
       so we have a single place to change the version
     -->
     <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>diff_match_patch</groupId>
-      <artifactId>diff_match_patch</artifactId>
-      <scope>test</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
     </dependency>
     <dependency>
       <groupId>caja</groupId>
@@ -257,9 +259,41 @@
 
     <!-- test -->
     <dependency>
+      <groupId>org.apache.shindig</groupId>
+      <artifactId>shindig-common</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>diff_match_patch</groupId>
+      <artifactId>diff_match_patch</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit-addons</groupId>
+      <artifactId>junit-addons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-easymock</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xmlunit</groupId>
+      <artifactId>xmlunit</artifactId>
     </dependency>
   </dependencies>
 </project>

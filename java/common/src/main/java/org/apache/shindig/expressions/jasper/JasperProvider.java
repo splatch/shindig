@@ -21,7 +21,7 @@ package org.apache.shindig.expressions.jasper;
 import javax.el.ExpressionFactory;
 import org.apache.el.ExpressionFactoryImpl;
 
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.expressions.ELTypeConverter;
 import org.apache.shindig.expressions.ExpressionProvider;
 

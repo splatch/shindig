@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.common.cache;
+package org.apache.shindig.api.cache;
 
 /**
  * A basic cache interface. If necessary, we can always move to the commons

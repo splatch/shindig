@@ -46,7 +46,6 @@
       org.apache.shindig.config*,
       org.apache.shindig.expressions*,
       org.apache.shindig.protocol*,
-      org.apache.shindig.common.cache.ehcache*,
       org.apache.shindig.common.logging.i18n,
     </osgi.export>
   </properties>
@@ -75,24 +74,16 @@
     </resources>
   </build>
 
-  <profiles>
-    <profile>
-      <id>reporting</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>clirr-maven-plugin</artifactId>
-            <configuration>
-              <comparisonVersion>${shindig.api.previous}</comparisonVersion>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
-    </profile>
-  </profiles>
-
   <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.shindig</groupId>
+      <artifactId>shindig-api</artifactId>
+    </dependency>
     <!-- external dependencies -->
     <dependency>
       <groupId>com.google.inject</groupId>
@@ -136,7 +127,8 @@
     </dependency>
     <dependency>
       <groupId>net.sf.ehcache</groupId>
-      <artifactId>ehcache-core</artifactId>
+      <artifactId>ehcache</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>de.odysseus.juel</groupId>
@@ -159,7 +151,27 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit-addons</groupId>
+      <artifactId>junit-addons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-easymock</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xmlunit</groupId>
+      <artifactId>xmlunit</artifactId>
     </dependency>
   </dependencies>
 </project>

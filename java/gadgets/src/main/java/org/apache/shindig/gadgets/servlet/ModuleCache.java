@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
-import org.apache.shindig.common.cache.Cache;
+import org.apache.shindig.api.cache.Cache;
 
 /**
  * A per-module cache of intermediate cajoling results.

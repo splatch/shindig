@@ -20,7 +20,7 @@ package org.apache.shindig.expressions;
 
 import javax.el.ExpressionFactory;
 
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.expressions.juel.JuelProvider;
 
 import com.google.inject.ImplementedBy;

@@ -27,9 +27,9 @@ import de.odysseus.el.tree.TreeCache;
 import de.odysseus.el.tree.TreeStore;
 import de.odysseus.el.tree.impl.Builder;
 
-import org.apache.shindig.common.cache.Cache;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.cache.NullCache;
-import org.apache.shindig.common.cache.CacheProvider;
 import org.apache.shindig.expressions.ELTypeConverter;
 import org.apache.shindig.expressions.ExpressionProvider;
 

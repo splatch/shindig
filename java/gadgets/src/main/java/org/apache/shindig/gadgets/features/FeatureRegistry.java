@@ -32,8 +32,8 @@ import com.google.inject.name.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shindig.common.Pair;
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.uri.UriBuilder;

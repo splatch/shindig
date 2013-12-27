@@ -22,8 +22,8 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.util.HashUtil;
 import org.apache.shindig.gadgets.GadgetException;

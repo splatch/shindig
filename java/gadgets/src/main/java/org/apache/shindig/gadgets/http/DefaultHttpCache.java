@@ -18,8 +18,8 @@
  */
 package org.apache.shindig.gadgets.http;
 
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

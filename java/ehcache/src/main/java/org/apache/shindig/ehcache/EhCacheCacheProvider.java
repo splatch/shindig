@@ -16,25 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.common.cache.ehcache;
+package org.apache.shindig.ehcache;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
-import org.apache.shindig.common.servlet.GuiceServletContextListener;
-import org.apache.shindig.common.util.ResourceLoader;
-
-import com.google.common.collect.MapMaker;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.config.Configuration;
-import net.sf.ehcache.config.ConfigurationFactory;
-import net.sf.ehcache.management.ManagementService;
-
-import javax.management.MBeanServer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -42,18 +25,38 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.PreDestroy;
+import javax.management.MBeanServer;
+
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.config.Configuration;
+import net.sf.ehcache.config.ConfigurationFactory;
+import net.sf.ehcache.management.ManagementService;
+
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
+import org.apache.shindig.api.io.ResourceLoader;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.MapMaker;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 /**
  * Cache interface based on ehcache.
  *
  * @see <a href="http://www.ehcache.org">http://www.ehcache.org</a>
  */
-public class EhCacheCacheProvider implements CacheProvider,
-        GuiceServletContextListener.CleanupCapable {
+public class EhCacheCacheProvider implements CacheProvider {
   private static final Logger LOG = Logger.getLogger(EhCacheCacheProvider.class.getName());
+
+  private final ResourceLoader loader;
   private final CacheManager cacheManager;
   private final ConcurrentMap<String, Cache<?, ?>> caches = new MapMaker().makeMap();
 
   /**
+   * @param loader
+   *          resource loader responsible for IO handling.
    * @param configPath
    *          the path to the EhCache configuration file
    * @param filterPath
@@ -69,30 +72,15 @@ public class EhCacheCacheProvider implements CacheProvider,
    *           if there was an issue parsing the given configuration
    */
   @Inject
-  public EhCacheCacheProvider(@Named("shindig.cache.ehcache.config") String configPath,
-                              @Named("shindig.cache.ehcache.sizeof.filter") String filterPath,
+  public EhCacheCacheProvider(ResourceLoader loader,
+                              @Named("shindig.cache.ehcache.config") String configPath,
                               @Named("shindig.cache.ehcache.jmx.enabled") boolean jmxEnabled,
-                              @Named("shindig.cache.ehcache.jmx.stats") boolean withCacheStats,
-                              GuiceServletContextListener.CleanupHandler cleanupHandler)
+                              @Named("shindig.cache.ehcache.jmx.stats") boolean withCacheStats)
       throws IOException {
-    // TODO: Setting this system property is currently the only way to hook in our own filter
-    // https://jira.terracotta.org/jira/browse/EHC-938
-    // https://jira.terracotta.org/jira/browse/EHC-924
-    // Remove res:// and file:// prefixes.  EhCache can't understand them.
-    String normalizedFilterPath = filterPath.replaceFirst(ResourceLoader.RESOURCE_PREFIX, "");
-    normalizedFilterPath = normalizedFilterPath.replaceFirst(ResourceLoader.FILE_PREFIX, "");
-    System.setProperty("net.sf.ehcache.sizeof.filter", normalizedFilterPath);
 
-    // If ehcache.disk.store.dir isn't already set, set it to java.io.tmpdir.
-    // See http://ehcache.org/documentation/user-guide/storage-options#diskstore-configuration-element
-    String diskStoreProperty = System.getProperty("ehcache.disk.store.dir");
-    if (Strings.isNullOrEmpty(diskStoreProperty)) {
-      System.setProperty("ehcache.disk.store.dir", System.getProperty("java.io.tmpdir"));
-    }
-
+    this.loader = loader;
     cacheManager = CacheManager.newInstance(getConfiguration(configPath));
     create(jmxEnabled, withCacheStats);
-    cleanupHandler.register(this);
   }
 
   /**
@@ -107,7 +95,7 @@ public class EhCacheCacheProvider implements CacheProvider,
    *           if there was an error parsing the given configuration
    */
   protected Configuration getConfiguration(String configPath) throws IOException {
-    InputStream configStream = ResourceLoader.open(configPath);
+    InputStream configStream = loader.open(configPath);
     return ConfigurationFactory.parseConfiguration(configStream);
   }
 
@@ -122,6 +110,7 @@ public class EhCacheCacheProvider implements CacheProvider,
   /**
    * Perform a shutdown of the underlying cache manager.
    */
+  @PreDestroy
   public void cleanup() {
     cacheManager.shutdown();
   }
@@ -139,4 +128,5 @@ public class EhCacheCacheProvider implements CacheProvider,
     }
     return (Cache<K, V>) caches.get(Preconditions.checkNotNull(name));
   }
+
 }

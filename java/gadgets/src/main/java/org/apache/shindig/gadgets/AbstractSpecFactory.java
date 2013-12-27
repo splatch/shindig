@@ -19,7 +19,7 @@
 package org.apache.shindig.gadgets;
 
 import org.apache.shindig.auth.AnonymousSecurityToken;
-import org.apache.shindig.common.cache.Cache;
+import org.apache.shindig.api.cache.Cache;
 import org.apache.shindig.common.cache.SoftExpiringCache;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.uri.Uri;

@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.common.cache.ehcache;
-
-import com.google.common.base.Preconditions;
-import org.apache.shindig.common.cache.Cache;
+package org.apache.shindig.ehcache;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+
+import org.apache.shindig.api.cache.Cache;
+
+import com.google.common.base.Preconditions;
 
 
 /**
@@ -104,6 +105,6 @@ public class EhConfiguredCache<K, V> implements Cache<K, V> {
    * will not include the size of remote caches.
    */
   public long getSize() {
-    return cache.getMemoryStoreSize() + cache.getDiskStoreSize();
+    return cache.getSize();
   }
 }

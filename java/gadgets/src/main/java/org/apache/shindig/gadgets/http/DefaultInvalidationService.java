@@ -20,8 +20,8 @@ package org.apache.shindig.gadgets.http;
 
 import com.google.common.base.Strings;
 import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.common.cache.Cache;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.Cache;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.AuthType;
 

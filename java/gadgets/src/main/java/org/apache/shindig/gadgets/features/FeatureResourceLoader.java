@@ -22,6 +22,8 @@ import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import net.sf.ehcache.pool.sizeof.annotations.IgnoreSizeOf;
+
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.util.TimeSource;
@@ -254,6 +256,7 @@ public class FeatureResourceLoader {
   }
 
   private static final class UriResource extends FeatureResource.Attribute {
+    @IgnoreSizeOf
     private final HttpFetcher fetcher;
     private final Uri uri;
     private final boolean isInline;

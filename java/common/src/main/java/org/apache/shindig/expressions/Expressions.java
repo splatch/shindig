@@ -19,7 +19,7 @@
 package org.apache.shindig.expressions;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.shindig.common.cache.CacheProvider;
+import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.expressions.juel.JuelProvider;
 import org.apache.shindig.expressions.juel.JuelTypeConverter;
 

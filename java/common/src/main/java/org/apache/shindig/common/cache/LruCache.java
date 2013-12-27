@@ -21,6 +21,8 @@ package org.apache.shindig.common.cache;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.shindig.api.cache.Cache;
+
 /**
  * A basic LRU cache. Prefer using EhCache for most purposes to this class.
  */
