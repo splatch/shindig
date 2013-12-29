@@ -18,11 +18,8 @@
  */
 package org.apache.shindig.gadgets.preload;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import org.apache.shindig.common.JsonAssert;
 import org.apache.shindig.gadgets.AuthType;
 import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.http.HttpFetcher;
@@ -71,7 +68,7 @@ public class HttpPreloaderTest extends PreloaderTestFixture {
     assertEquals(context.getToken().getAppId(), request.getSecurityToken().getAppId());
   }
 
-  private static void checkResults(Object results, String url) throws Exception {
+  private void checkResults(Object results, String url) throws Exception {
     Map<String, Object> expected = Maps.newHashMap();
     expected.put("body", PRELOAD_CONTENT);
     expected.put("rc", HttpResponse.SC_OK);
@@ -79,10 +76,10 @@ public class HttpPreloaderTest extends PreloaderTestFixture {
     expected.put("headers", Collections.singletonMap("set-cookie", Arrays.asList("yo=momma")));
     expected.putAll(PRELOAD_METADATA);
 
-    JsonAssert.assertObjectEquals(expected, results);
+    assertObjectEquals(expected, results);
   }
 
-  private static void checkResults(Object results) throws Exception {
+  private void checkResults(Object results) throws Exception {
     checkResults(results, PRELOAD_HREF);
   }
 

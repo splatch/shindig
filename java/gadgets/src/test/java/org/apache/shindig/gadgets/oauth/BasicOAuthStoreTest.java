@@ -18,15 +18,14 @@
  */
 package org.apache.shindig.gadgets.oauth;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import net.oauth.OAuthConsumer;
 import net.oauth.OAuthServiceProvider;
 import net.oauth.signature.RSA_SHA1;
 
-import org.apache.shindig.common.testing.FakeGadgetToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth.BasicOAuthStoreConsumerKeyAndSecret.KeyType;
 import org.apache.shindig.gadgets.oauth.OAuthStore.ConsumerInfo;
@@ -67,8 +66,8 @@ public class BasicOAuthStoreTest {
 
   @Test
   public void testInit() throws Exception {
-    FakeGadgetToken t = new FakeGadgetToken();
-    t.setAppUrl("http://localhost:8080/gadgets/oauth.xml");
+    SecurityToken t = mock(SecurityToken.class);
+    when(t.getAppUrl()).thenReturn("http://localhost:8080/gadgets/oauth.xml");
     OAuthServiceProvider provider = new OAuthServiceProvider("req", "authorize", "access");
     ConsumerInfo consumerInfo = store.getConsumerKeyAndSecret(t, "", provider);
     OAuthConsumer consumer = consumerInfo.getConsumer();
@@ -79,7 +78,7 @@ public class BasicOAuthStoreTest {
     assertNull(consumerInfo.getKeyName());
     assertEquals("default callback", consumerInfo.getCallbackUrl());
 
-    t.setAppUrl("http://rsagadget/test.xml");
+    when(t.getAppUrl()).thenReturn("http://rsagadget/test.xml");
     consumerInfo = store.getConsumerKeyAndSecret(t, "", provider);
     consumer = consumerInfo.getConsumer();
     assertEquals("rsaconsumer", consumer.consumerKey);
@@ -93,10 +92,10 @@ public class BasicOAuthStoreTest {
 
   @Test
   public void testGetAndSetAndRemoveToken() {
-    FakeGadgetToken t = new FakeGadgetToken();
+    SecurityToken t = mock(SecurityToken.class);
     ConsumerInfo consumer = new ConsumerInfo(null, null, null);
-    t.setAppUrl("http://localhost:8080/gadgets/oauth.xml");
-    t.setViewerId("viewer-one");
+    when(t.getAppUrl()).thenReturn("http://localhost:8080/gadgets/oauth.xml");
+    when(t.getViewerId()).thenReturn("viewer-one");
     assertNull(store.getTokenInfo(t, consumer, "", ""));
 
     TokenInfo info = new TokenInfo("token", "secret", null, 0);
@@ -106,9 +105,9 @@ public class BasicOAuthStoreTest {
     assertEquals("token", info.getAccessToken());
     assertEquals("secret", info.getTokenSecret());
 
-    FakeGadgetToken t2 = new FakeGadgetToken();
-    t2.setAppUrl("http://localhost:8080/gadgets/oauth.xml");
-    t2.setViewerId("viewer-two");
+    SecurityToken t2 = mock(SecurityToken.class);
+    when(t2.getAppUrl()).thenReturn("http://localhost:8080/gadgets/oauth.xml");
+    when(t2.getViewerId()).thenReturn("viewer-two");
     assertNull(store.getTokenInfo(t2, consumer, "service", "token"));
 
     store.removeToken(t, consumer, "service", "token");
@@ -117,8 +116,8 @@ public class BasicOAuthStoreTest {
 
   @Test
   public void testDefaultKey() throws Exception {
-    FakeGadgetToken t = new FakeGadgetToken();
-    t.setAppUrl("http://localhost:8080/not-in-store.xml");
+    SecurityToken t = mock(SecurityToken.class);
+    when(t.getAppUrl()).thenReturn("http://localhost:8080/not-in-store.xml");
     OAuthServiceProvider provider = new OAuthServiceProvider("req", "authorize", "access");
 
     try {
@@ -153,8 +152,8 @@ public class BasicOAuthStoreTest {
     store = new BasicOAuthStore();
     store.initFromConfigString(SAMPLE_FILE);
 
-    FakeGadgetToken t = new FakeGadgetToken();
-    t.setAppUrl("http://localhost:8080/gadgets/oauth.xml");
+    SecurityToken t = mock(SecurityToken.class);
+    when(t.getAppUrl()).thenReturn("http://localhost:8080/gadgets/oauth.xml");
     OAuthServiceProvider provider = new OAuthServiceProvider("req", "authorize", "access");
     ConsumerInfo consumerInfo = store.getConsumerKeyAndSecret(t, "", provider);
     OAuthConsumer consumer = consumerInfo.getConsumer();

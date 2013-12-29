@@ -22,6 +22,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shindig.api.auth.SecurityToken;
+
 /**
  * Class to get authorization information on a servlet request.
  *

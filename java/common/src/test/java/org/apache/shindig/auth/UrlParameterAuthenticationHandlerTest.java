@@ -18,18 +18,34 @@
  */
 package org.apache.shindig.auth;
 
-import org.apache.shindig.common.testing.FakeHttpServletRequest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.when;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
+import net.oauth.OAuth;
+
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.auth.SecurityTokenException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
 public class UrlParameterAuthenticationHandlerTest {
   SecurityToken expectedToken;
   UrlParameterAuthenticationHandler authHandler;
   SecurityTokenCodec codec;
+  @Mock
   HttpServletRequest req;
 
   @Before
@@ -62,65 +78,70 @@ public class UrlParameterAuthenticationHandlerTest {
 
   @Test
   public void testGetSecurityTokenFromRequest() throws Exception {
-    Assert.assertEquals(authHandler.getName(), AuthenticationMode.SECURITY_TOKEN_URL_PARAMETER.name());
+    assertEquals(authHandler.getName(), AuthenticationMode.SECURITY_TOKEN_URL_PARAMETER.name());
   }
 
   @Test
   public void testInvalidRequests() throws Exception {
-    // Empty request
-    req = new FakeHttpServletRequest();
-    Assert.assertNull(authHandler.getSecurityTokenFromRequest(req));
+    when(req.getRequestURL()).thenReturn(new StringBuffer("/"));
+    assertNull(authHandler.getSecurityTokenFromRequest(req));
 
     // Old behavior, no longer supported
-    req = new FakeHttpServletRequest().setHeader("Authorization", "Token token=\"1234\"");
-    Assert.assertNull(authHandler.getSecurityTokenFromRequest(req));
+    when(req.getHeader("Authorization")).thenReturn("Token token=\"1234\"");
+    assertNull(authHandler.getSecurityTokenFromRequest(req));
 
-    req = new FakeHttpServletRequest().setHeader("Authorization", "OAuth 1234");
-    Assert.assertNull(authHandler.getSecurityTokenFromRequest(req));
+    when(req.getHeader("Authorization")).thenReturn("OAuth 1234");
+    assertNull(authHandler.getSecurityTokenFromRequest(req));
   }
 
   @Test
   public void testSecurityToken() throws Exception {
     // security token in request
-    req = new FakeHttpServletRequest("http://example.org/rpc?st=1234");
-    Assert.assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
+    when(req.getRequestURL()).thenReturn(new StringBuffer("http://example.org/rpc?st=1234"));
+    when(req.getParameter(UrlParameterAuthenticationHandler.SECURITY_TOKEN_PARAM)).thenReturn("1234");
+    assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
   }
 
   @Test
   public void testOAuth1() throws Exception {
     // An OAuth 1.0 request, we should not process this.
-    req = new FakeHttpServletRequest()
-        .setHeader("Authorization", "OAuth oauth_signature_method=\"RSA-SHA1\"");
+    when(req.getRequestURL()).thenReturn(new StringBuffer("/"));
+    when(req.getParameter("Authorization")).thenReturn("OAuth oauth_signature_method=\"RSA-SHA1\"");
     SecurityToken token = authHandler.getSecurityTokenFromRequest(req);
-    Assert.assertNull(token);
+    assertNull(token);
   }
 
   @Test
   public void testOAuth2Header() throws Exception {
-    req = new FakeHttpServletRequest("https://www.example.org/")
-        .setHeader("Authorization", "OAuth2  1234");
-    Assert.assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
+    when(req.getRequestURL()).thenReturn(new StringBuffer("https://www.example.org/"));
+    when(req.isSecure()).thenReturn(true);
+    when(req.getHeaders("Authorization")).thenReturn(Collections.enumeration(Arrays.asList("OAuth2  1234")));
+    assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
 
-    req = new FakeHttpServletRequest("https://www.example.org/")
-        .setHeader("Authorization", "   OAuth2    1234 ");
-    Assert.assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
+    when(req.getHeaders("Authorization")).thenReturn(Collections.enumeration(Arrays.asList("   OAuth2    1234 ")));
+    assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
 
-    req = new FakeHttpServletRequest("https://www.example.org/")
-        .setHeader("Authorization", "OAuth2 1234 x=1,y=\"2 2 2\"");
-    Assert.assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
+    when(req.getHeaders("Authorization")).thenReturn(Collections.enumeration(Arrays.asList("OAuth2 1234 x=1,y=\"2 2 2\"")));
+    assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
+  }
 
-    req = new FakeHttpServletRequest("http://www.example.org/")
-        .setHeader("Authorization", "OAuth2 1234");
-    Assert.assertNull(authHandler.getSecurityTokenFromRequest(req));
+  @Test
+  public void testBadOAuth2Header() throws Exception {
+    when(req.getRequestURL()).thenReturn(new StringBuffer("http://www.example.org/"));
+    when(req.getHeaders("Authorization")).thenReturn(Collections.enumeration(Arrays.asList("OAuth2 1234")));
+    assertNull(authHandler.getSecurityTokenFromRequest(req));
   }
 
   @Test
   public void testOAuth2Param() throws Exception
   {
-    req = new FakeHttpServletRequest("https://www.example.com?oauth_token=1234");
-    Assert.assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
+    when(req.getRequestURL()).thenReturn(new StringBuffer("https://www.example.com?oauth_token=1234"));
+    when(req.isSecure()).thenReturn(true);
+    when(req.getParameter("oauth_token")).thenReturn("1234");
 
-    req = new FakeHttpServletRequest("https://www.example.com?oauth_token=1234&oauth_signature_method=RSA-SHA1");
-    Assert.assertNull(authHandler.getSecurityTokenFromRequest(req));
+    assertEquals(expectedToken, authHandler.getSecurityTokenFromRequest(req));
+
+    when(req.getParameter(OAuth.OAUTH_SIGNATURE_METHOD)).thenReturn("RSA-SHA1");
+    assertNull(authHandler.getSecurityTokenFromRequest(req));
   }
 }

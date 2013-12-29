@@ -18,33 +18,30 @@
  */
 package org.apache.shindig.gadgets.preload;
 
-import static org.easymock.EasyMock.and;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.isA;
-import static org.easymock.EasyMock.reportMatcher;
-import static org.easymock.EasyMock.same;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.JsonAssert;
-import org.apache.shindig.common.JsonSerializer;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlUtil;
 import org.apache.shindig.expressions.Expressions;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.apache.shindig.gadgets.spec.PipelinedData;
+import org.apache.shindig.gadgets.spec.PipelinedData.Batch;
+import org.apache.shindig.gadgets.spec.PipelinedData.BatchItem;
+import org.apache.shindig.gadgets.spec.PipelinedData.BatchType;
 import org.apache.shindig.gadgets.spec.RequestAuthenticationInfo;
 import org.apache.shindig.gadgets.spec.SpecParserException;
-import org.easymock.Capture;
-import org.easymock.IArgumentMatcher;
-import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
 import java.util.Collection;
@@ -54,9 +51,10 @@ import java.util.concurrent.Executors;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class PipelineExecutorTest {
+@RunWith(MockitoJUnitRunner.class)
+public class PipelineExecutorTest extends JsonAssert {
 
-  private IMocksControl control;
+  @Mock
   private PipelinedDataPreloader preloader;
   private PreloaderService preloaderService;
   private GadgetContext context;
@@ -83,10 +81,12 @@ public class PipelineExecutorTest {
     + "  <os:PeopleRequest key=\"me\" userId=\"${json.user}\"/>"
     + "</Content>";
 
+  public PipelineExecutorTest() {
+    super(new DefaultJsonSerializer());
+  }
+
   @Before
   public void setUp() throws Exception {
-    control = EasyMock.createStrictControl();
-    preloader = control.createMock(PipelinedDataPreloader.class);
     preloaderService = new ConcurrentPreloaderService(Executors.newSingleThreadExecutor(), null);
     executor = new PipelineExecutor(preloader, preloaderService, Expressions.forTesting());
 
@@ -102,8 +102,7 @@ public class PipelineExecutorTest {
   public void execute() throws Exception {
     PipelinedData pipeline = getPipelinedData(CONTENT);
 
-    Capture<PipelinedData.Batch> batchCapture =
-      new Capture<PipelinedData.Batch>();
+    ArgumentCaptor<Batch> batchCapture = ArgumentCaptor.forClass(Batch.class);
 
     JSONObject expectedData = new JSONObject("{result: {foo: 'bar'}}");
 
@@ -111,26 +110,24 @@ public class PipelineExecutorTest {
     Callable<PreloadedData> callable = createPreloadTask("key", expectedData.toString());
 
     // One batch with 1 each HTTP and Social preload
-    expect(preloader.createPreloadTasks(same(context),
-            and(eqBatch(1, 1), capture(batchCapture))))
-            .andReturn(ImmutableList.of(callable));
-
-    control.replay();
+    when(preloader.createPreloadTasks(same(context), batchCapture.capture()))
+            .thenReturn(ImmutableList.of(callable));
 
     PipelineExecutor.Results results = executor.execute(context,
         ImmutableList.of(pipeline));
 
     // Verify the data set is injected, and the os-data was deleted
-    assertTrue(batchCapture.getValue().getPreloads().containsKey("me"));
+    Batch value = batchCapture.getValue();
+    assertThat(value, new BatchMatcher(1, 1));
+
+    assertTrue(value.getPreloads().containsKey("me"));
     assertTrue(batchCapture.getValue().getPreloads().containsKey("json"));
 
-    JsonAssert.assertJsonEquals("[{id: 'key', result: {foo: 'bar'}}]",
-        JsonSerializer.serialize(results.results));
-    JsonAssert.assertJsonEquals("{foo: 'bar'}",
-        JsonSerializer.serialize(results.keyedResults.get("key")));
+    assertJsonEquals("[{id: 'key', result: {foo: 'bar'}}]",
+        new DefaultJsonSerializer().serialize(results.results));
+    assertJsonEquals("{foo: 'bar'}",
+        new DefaultJsonSerializer().serialize(results.keyedResults.get("key")));
     assertTrue(results.remainingPipelines.isEmpty());
-
-    control.verify();
   }
 
   @Test
@@ -149,51 +146,46 @@ public class PipelineExecutorTest {
     };
 
     // First batch, the HTTP fetch
-    Capture<PipelinedData.Batch> firstBatch =
-      new Capture<PipelinedData.Batch>();
+    ArgumentCaptor<Batch> firstBatch = ArgumentCaptor.forClass(Batch.class);
     Callable<PreloadedData> firstTask = createPreloadTask("json",
         "{result: {user: 'canonical'}}");
 
     // Second batch, the user fetch
-    Capture<PipelinedData.Batch> secondBatch =
-      new Capture<PipelinedData.Batch>();
+    ArgumentCaptor<Batch> secondBatch = ArgumentCaptor.forClass(Batch.class);
     Callable<PreloadedData> secondTask = createPreloadTask("me",
         "{result: {'id':'canonical'}}");
 
     // First, a batch with an HTTP request
-    expect(
-        preloader.createPreloadTasks(same(context),
-            and(eqBatch(0, 1), capture(firstBatch))))
-            .andReturn(ImmutableList.of(firstTask));
+    when(preloader.createPreloadTasks(same(context), firstBatch.capture()))
+        .thenReturn(ImmutableList.of(firstTask));
     // Second, a batch with a social request
-    expect(
-        preloader.createPreloadTasks(same(context),
-            and(eqBatch(1, 0), capture(secondBatch))))
-            .andReturn(ImmutableList.of(secondTask));
+    when(preloader.createPreloadTasks(same(context), secondBatch.capture()))
+        .thenReturn(ImmutableList.of(secondTask));
 
-    control.replay();
 
     PipelineExecutor.Results results = executor.execute(context,
         ImmutableList.of(pipeline));
 
-    JsonAssert.assertJsonEquals("[{id: 'json', result: {user: 'canonical'}}," +
+    assertJsonEquals("[{id: 'json', result: {user: 'canonical'}}," +
         "{id: 'me', result: {id: 'canonical'}}]",
-        JsonSerializer.serialize(results.results));
+        new DefaultJsonSerializer().serialize(results.results));
     assertEquals(ImmutableSet.of("json", "me"), results.keyedResults.keySet());
     assertTrue(results.remainingPipelines.isEmpty());
 
-    control.verify();
-
     // Verify the data set is injected, and the os-data was deleted
 
+    Batch firstValue = firstBatch.getValue();
+    assertThat(firstValue, new BatchMatcher(0, 1));
     // Check the evaluated HTTP request
     RequestAuthenticationInfo request = (RequestAuthenticationInfo)
-        firstBatch.getValue().getPreloads().get("json").getData();
+        firstValue.getPreloads().get("json").getData();
     assertEquals("http://example.org/test.json", request.getHref().toString());
 
     // Check the evaluated person request
-    JSONObject personRequest = (JSONObject) secondBatch.getValue().getPreloads().get("me").getData();
+    Batch secondValue = secondBatch.getValue();
+    JSONObject personRequest = (JSONObject) secondValue.getPreloads().get("me").getData();
     assertEquals("canonical", personRequest.getJSONObject("params").getJSONArray("userId").get(0));
+    assertThat(secondValue, new BatchMatcher(1, 0));
   }
 
   @Test
@@ -201,11 +193,9 @@ public class PipelineExecutorTest {
     PipelinedData pipeline = getPipelinedData(BLOCKED_FIRST_BATCH_CONTENT);
 
     // Expect a batch with no content
-    expect(
-        preloader.createPreloadTasks(same(context), eqBatch(0, 0)))
-            .andReturn(ImmutableList.<Callable<PreloadedData>>of());
+    when(preloader.createPreloadTasks(same(context), argThat(new BatchMatcher(0, 0))))
+      .thenReturn(ImmutableList.<Callable<PreloadedData>>of());
 
-    control.replay();
 
     PipelineExecutor.Results results = executor.execute(context,
         ImmutableList.of(pipeline));
@@ -213,16 +203,13 @@ public class PipelineExecutorTest {
     assertTrue(results.keyedResults.isEmpty());
     assertEquals(1, results.remainingPipelines.size());
     assertSame(pipeline, results.remainingPipelines.iterator().next());
-
-    control.verify();
   }
 
   @Test
   public void executeError() throws Exception {
     PipelinedData pipeline = getPipelinedData(CONTENT);
 
-    Capture<PipelinedData.Batch> batchCapture =
-      new Capture<PipelinedData.Batch>();
+    ArgumentCaptor<Batch> batchCapture = ArgumentCaptor.forClass(Batch.class);
 
     JSONObject expectedData = new JSONObject("{error: {message: 'NO!', code: 500}}");
 
@@ -230,32 +217,29 @@ public class PipelineExecutorTest {
     Callable<PreloadedData> callable = createPreloadTask("key", expectedData.toString());
 
     // One batch with 1 each HTTP and Social preload
-    expect(preloader.createPreloadTasks(same(context),
-            and(eqBatch(1, 1), capture(batchCapture))))
-            .andReturn(ImmutableList.of(callable));
-
-    control.replay();
+    when(preloader.createPreloadTasks(same(context), batchCapture.capture()))
+      .thenReturn(ImmutableList.of(callable));
 
     PipelineExecutor.Results results = executor.execute(context,
         ImmutableList.of(pipeline));
 
     // Verify the data set is injected, and the os-data was deleted
-    assertTrue(batchCapture.getValue().getPreloads().containsKey("me"));
+    Batch batch = batchCapture.getValue();
+    assertThat(batch, new BatchMatcher(1, 1));
+    assertTrue(batch.getPreloads().containsKey("me"));
     assertTrue(batchCapture.getValue().getPreloads().containsKey("json"));
 
-    JsonAssert.assertJsonEquals("[{id: 'key', error: {message: 'NO!', code: 500}}]",
-        JsonSerializer.serialize(results.results));
-    JsonAssert.assertJsonEquals("{message: 'NO!', code: 500}",
-        JsonSerializer.serialize(results.keyedResults.get("key")));
+    assertJsonEquals("[{id: 'key', error: {message: 'NO!', code: 500}}]",
+        new DefaultJsonSerializer().serialize(results.results));
+    assertJsonEquals("{message: 'NO!', code: 500}",
+        new DefaultJsonSerializer().serialize(results.keyedResults.get("key")));
     assertTrue(results.remainingPipelines.isEmpty());
-
-    control.verify();
   }
 
   @Test
   public void executePreloadException() throws Exception {
     PipelinedData pipeline = getPipelinedData(CONTENT);
-    final PreloadedData willThrow = control.createMock(PreloadedData.class);
+    final PreloadedData willThrow = mock(PreloadedData.class);
 
     Callable<PreloadedData> callable = new Callable<PreloadedData>() {
       public PreloadedData call() throws Exception {
@@ -264,13 +248,10 @@ public class PipelineExecutorTest {
     };
 
     // One batch
-    expect(preloader.createPreloadTasks(same(context),
-        isA(PipelinedData.Batch.class))).andReturn(ImmutableList.of(callable));
+    when(preloader.createPreloadTasks(same(context),
+        isA(Batch.class))).thenReturn(ImmutableList.of(callable));
     // And PreloadedData that throws an exception
-    expect(willThrow.toJson()).andThrow(new PreloadException("Failed"));
-
-
-    control.replay();
+    when(willThrow.toJson()).thenThrow(new PreloadException("Failed"));
 
     PipelineExecutor.Results results = executor.execute(context,
         ImmutableList.of(pipeline));
@@ -279,17 +260,9 @@ public class PipelineExecutorTest {
     assertEquals(0, results.results.size());
     assertTrue(results.keyedResults.isEmpty());
     assertTrue(results.remainingPipelines.isEmpty());
-
-    control.verify();
   }
 
-  /** Match a batch with the specified count of social and HTTP data items */
-  private PipelinedData.Batch eqBatch(int socialCount, int httpCount) {
-    reportMatcher(new BatchMatcher(socialCount, httpCount));
-    return null;
-  }
-
-  private static class BatchMatcher implements IArgumentMatcher {
+  private static class BatchMatcher extends ArgumentMatcher<Batch> {
     private final int socialCount;
     private final int httpCount;
 
@@ -298,22 +271,18 @@ public class PipelineExecutorTest {
       this.httpCount = httpCount;
     }
 
-    public void appendTo(StringBuffer buffer) {
-      buffer.append("eqBuffer[social=").append(socialCount).append(",http=").append(httpCount).append(']');
-    }
-
     public boolean matches(Object obj) {
-      if (!(obj instanceof PipelinedData.Batch)) {
+      if (!(obj instanceof Batch)) {
         return false;
       }
 
-      PipelinedData.Batch batch = (PipelinedData.Batch) obj;
+      Batch batch = (Batch) obj;
       int actualSocialCount = 0;
       int actualHttpCount = 0;
-      for (PipelinedData.BatchItem item : batch.getPreloads().values()) {
-        if (item.getType() == PipelinedData.BatchType.HTTP) {
+      for (BatchItem item : batch.getPreloads().values()) {
+        if (item.getType() == BatchType.HTTP) {
           actualHttpCount++;
-        } else if (item.getType() == PipelinedData.BatchType.SOCIAL) {
+        } else if (item.getType() == BatchType.SOCIAL) {
           actualSocialCount++;
         }
       }

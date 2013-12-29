@@ -505,14 +505,14 @@
 
   <modules>
     <module>features</module>
+    <module>java/api</module>
+    <module>java/test</module>
     <module>java/common</module>
     <module>java/ehcache</module>
     <module>java/gadgets</module>
     <module>java/social-api</module>
     <module>java/sample-container</module>
     <module>java/sample-maven-archetype</module>
-    <module>java/server-resources</module>
-    <module>java/server-dependencies</module>
     <module>java/server</module>
     <module>extras</module>
   </modules>
@@ -573,12 +573,12 @@
       <id>reporting</id>
       <modules>
         <module>features</module>
+        <module>java/api</module>
+        <module>java/test</module>
         <module>java/common</module>
         <module>java/gadgets</module>
         <module>java/social-api</module>
         <module>java/sample-container</module>
-        <module>java/server-resources</module>
-        <module>java/server-dependencies</module>
         <module>java/server</module>
         <module>extras</module>
       </modules>
@@ -894,12 +894,12 @@
       <id>apache-release</id>
       <modules>
         <module>features</module>
+        <module>java/api</module>
+        <module>java/test</module>
         <module>java/common</module>
         <module>java/gadgets</module>
         <module>java/social-api</module>
         <module>java/sample-container</module>
-        <module>java/server-resources</module>
-        <module>java/server-dependencies</module>
         <module>java/server</module>
         <module>java/uber</module>
         <module>extras</module>
@@ -993,12 +993,11 @@
       <modules>
         <module>features</module>
         <module>java/api</module>
+        <module>java/test</module>
         <module>java/common</module>
         <module>java/gadgets</module>
         <module>java/social-api</module>
         <module>java/sample-container</module>
-        <module>java/server-resources</module>
-        <module>java/server-dependencies</module>
         <module>java/server</module>
         <module>extras</module>
         <module>assembly</module>
@@ -1073,7 +1072,6 @@
           <artifactId>maven-eclipse-plugin</artifactId>
           <version>2.9</version>
           <configuration>
-            <addVersionToProjectName>true</addVersionToProjectName>
             <workspaceCodeStylesURL>http://svn.apache.org/repos/asf/shindig/trunk/etc/eclipse/shindig-eclipse-codestyle_2.xml</workspaceCodeStylesURL>
           </configuration>
         </plugin>
@@ -1532,6 +1530,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.shindig</groupId>
+        <artifactId>shindig-test</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.shindig</groupId>
         <artifactId>shindig-features</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -1549,18 +1552,6 @@
         <groupId>org.apache.shindig</groupId>
         <artifactId>shindig-sample-container</artifactId>
         <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.shindig</groupId>
-        <artifactId>shindig-server-resources</artifactId>
-        <version>${project.version}</version>
-        <type>war</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.shindig</groupId>
-        <artifactId>shindig-server-dependencies</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
       </dependency>
       <dependency>
         <groupId>org.apache.shindig</groupId>

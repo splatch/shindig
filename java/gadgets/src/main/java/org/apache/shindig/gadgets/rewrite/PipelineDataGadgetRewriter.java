@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.gadgets.rewrite;
 
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.xml.DomUtil;
 import org.apache.shindig.gadgets.Gadget;
@@ -50,10 +50,12 @@ public class PipelineDataGadgetRewriter implements GadgetRewriter {
   private static final Logger LOG = Logger.getLogger(classname,MessageKeys.MESSAGES);
 
   private final PipelineExecutor executor;
+private final JsonSerializer serializer;
 
   @Inject
-  public PipelineDataGadgetRewriter(PipelineExecutor executor) {
+  public PipelineDataGadgetRewriter(PipelineExecutor executor, JsonSerializer serializer) {
     this.executor = executor;
+    this.serializer = serializer;
   }
 
   public void rewrite(Gadget gadget, MutableContent content) {
@@ -96,7 +98,7 @@ public class PipelineDataGadgetRewriter implements GadgetRewriter {
         script.append("opensocial.data.DataContext.putDataSet(\"")
             .append(key)
             .append("\",")
-            .append(JsonSerializer.serialize(entry.getValue()))
+            .append(serializer.serialize(entry.getValue()))
             .append(");");
       }
 

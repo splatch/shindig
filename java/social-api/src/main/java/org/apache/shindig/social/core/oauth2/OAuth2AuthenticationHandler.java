@@ -23,9 +23,9 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AnonymousSecurityToken;
 import org.apache.shindig.auth.AuthenticationHandler;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 
 import com.google.inject.Inject;

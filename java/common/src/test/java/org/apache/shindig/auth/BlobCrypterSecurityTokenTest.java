@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shindig.auth.AbstractSecurityToken.Keys;
+import org.apache.shindig.api.auth.SecurityToken.Keys;
 import org.apache.shindig.common.crypto.BasicBlobCrypter;
 import org.apache.shindig.common.crypto.Crypto;
 import org.apache.shindig.common.util.FakeTimeSource;

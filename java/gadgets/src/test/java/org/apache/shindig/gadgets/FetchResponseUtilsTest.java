@@ -18,6 +18,7 @@
  */
 package org.apache.shindig.gadgets;
 
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.JsonAssert;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.http.HttpResponseBuilder;
@@ -29,7 +30,11 @@ import java.util.Map;
 /**
  * Test of FetchResponseUtils
  */
-public class FetchResponseUtilsTest {
+public class FetchResponseUtilsTest extends JsonAssert {
+
+  public FetchResponseUtilsTest() {
+    super(new DefaultJsonSerializer());
+  }
 
   @Test
   public void testSimpleResponse() throws Exception {
@@ -38,7 +43,7 @@ public class FetchResponseUtilsTest {
         .create();
     Map<String, Object> obj = FetchResponseUtils.getResponseAsJson(response, "key", "body", false);
 
-    JsonAssert.assertObjectEquals("{'rc':999,'id':'key',body:'body'}", obj);
+    assertObjectEquals("{'rc':999,'id':'key',body:'body'}", obj);
   }
 
   @Test
@@ -50,7 +55,7 @@ public class FetchResponseUtilsTest {
         .create();
     Map<String, Object> obj = FetchResponseUtils.getResponseAsJson(response, null, "body", false);
 
-    JsonAssert.assertObjectEquals(
+    assertObjectEquals(
         "{rc:999,body:'body',metaname:'metavalue','more meta':'more value'}", obj);
   }
 
@@ -62,7 +67,7 @@ public class FetchResponseUtilsTest {
         .setHeader("location", "here")
         .create();
     Map<String, Object> obj = FetchResponseUtils.getResponseAsJson(response, "key", "body", false);
-    JsonAssert.assertObjectEquals(
+    assertObjectEquals(
         "{rc:999,id:'key',body:'body',headers:{set-cookie:['cookie'],location:['here']}}", obj);
   }
 
@@ -75,7 +80,7 @@ public class FetchResponseUtilsTest {
         .addHeader("Set-Cookie", "cookie3")
         .create();
     Map<String, Object> obj = FetchResponseUtils.getResponseAsJson(response, "key", "body", false);
-    JsonAssert.assertObjectEquals(
+    assertObjectEquals(
         "{rc:999,id:'key',body:'body',headers:{set-cookie:['cookie','cookie2','cookie3']}}", obj);
   }
 }

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
+import org.apache.shindig.api.auth.SecurityTokenCodec;
 import org.apache.shindig.config.BasicContainerConfig;
 import org.apache.shindig.config.ContainerConfig;
 import org.junit.Before;

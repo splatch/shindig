@@ -19,7 +19,7 @@
 package org.apache.shindig.protocol;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.protocol.conversion.BeanConverter;

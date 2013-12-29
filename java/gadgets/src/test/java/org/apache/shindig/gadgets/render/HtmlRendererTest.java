@@ -21,8 +21,8 @@ package org.apache.shindig.gadgets.render;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AnonymousSecurityToken;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlUtil;
 import org.apache.shindig.gadgets.Gadget;

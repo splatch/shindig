@@ -18,40 +18,47 @@
  */
 package org.apache.shindig.protocol;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.shindig.common.testing.FakeGadgetToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.protocol.conversion.BeanJsonConverter;
 import org.apache.shindig.protocol.model.SortOrder;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Guice;
 
 import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Map;
 
 /**
  * Test BaseRequestItem
  */
-public class BaseRequestItemTest extends Assert {
+@RunWith(MockitoJUnitRunner.class)
+public class BaseRequestItemTest {
 
-  private static final FakeGadgetToken FAKE_TOKEN = new FakeGadgetToken();
+  @Mock
+  private SecurityToken FAKE_TOKEN;
 
   protected BaseRequestItem request;
   protected BeanJsonConverter converter;
 
   @Before
   public void setUp() throws Exception {
-    FAKE_TOKEN.setAppId("12345");
-    FAKE_TOKEN.setOwnerId("someowner");
-    FAKE_TOKEN.setViewerId("someowner");
-    converter = new BeanJsonConverter(Guice.createInjector());
+    when(FAKE_TOKEN.getAppId()).thenReturn("12345");
+    when(FAKE_TOKEN.getOwnerId()).thenReturn("someowner");
+    when(FAKE_TOKEN.getViewerId()).thenReturn("someowner");
+
+    converter = new BeanJsonConverter();
     request = new BaseRequestItem(
         Maps.<String,String[]>newHashMap(),
         FAKE_TOKEN, converter, converter);

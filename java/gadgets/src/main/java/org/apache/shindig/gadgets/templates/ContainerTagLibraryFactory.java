@@ -22,8 +22,9 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.common.uri.Uri;
-import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.common.xml.XmlException;
 import org.apache.shindig.common.xml.XmlUtil;
 import org.apache.shindig.config.ContainerConfig;
@@ -45,17 +46,17 @@ public class ContainerTagLibraryFactory {
       ContainerTagLibraryFactory.class.getName());
 
   private final ContainerConfig config;
-  private final LoadingCache<String, TemplateLibrary> osmlLibraryCache = CacheBuilder
-      .newBuilder()
-      .build(new CacheLoader<String, TemplateLibrary>() {
-          public TemplateLibrary load(String resourceName) {
-            return loadTrustedLibrary(resourceName);
-          }
-        });
+  private final LoadingCache<String, TemplateLibrary> osmlLibraryCache;
+
 
   @Inject
-  public ContainerTagLibraryFactory(ContainerConfig config) {
+  public ContainerTagLibraryFactory(ContainerConfig config, final ResourceLoader resourceLoader) {
     this.config = config;
+    osmlLibraryCache = CacheBuilder.newBuilder().build(new CacheLoader<String, TemplateLibrary>() {
+       public TemplateLibrary load(String resourceName) {
+         return loadTrustedLibrary(resourceName, resourceLoader);
+       }
+     });
   }
 
   /**
@@ -75,9 +76,9 @@ public class ContainerTagLibraryFactory {
     return osmlLibraryCache.getUnchecked(library);
   }
 
-  static private TemplateLibrary loadTrustedLibrary(String resource) {
+  static private TemplateLibrary loadTrustedLibrary(String resource, ResourceLoader resourceLoader) {
     try {
-      String content = ResourceLoader.getContent(resource);
+      String content = resourceLoader.getContent(resource);
       return new XmlTemplateLibrary(Uri.parse("#OSML"), XmlUtil.parse(content),
           content, true);
     } catch (IOException ioe) {

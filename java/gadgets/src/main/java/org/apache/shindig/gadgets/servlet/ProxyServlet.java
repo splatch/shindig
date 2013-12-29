@@ -20,8 +20,8 @@ package org.apache.shindig.gadgets.servlet;
 
 import com.google.inject.Inject;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AuthInfoUtil;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.servlet.InjectedServlet;
 import org.apache.shindig.common.uri.Uri;

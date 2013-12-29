@@ -18,9 +18,7 @@
  */
 package org.apache.shindig.gadgets.render;
 
-import static org.apache.shindig.auth.AbstractSecurityToken.Keys.APP_URL;
-import static org.apache.shindig.auth.AbstractSecurityToken.Keys.OWNER;
-import static org.apache.shindig.auth.AbstractSecurityToken.Keys.VIEWER;
+import static org.apache.shindig.api.auth.SecurityToken.Keys.*;
 
 import static org.apache.shindig.auth.AnonymousSecurityToken.ANONYMOUS_ID;
 
@@ -32,10 +30,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.auth.SecurityTokenException;
 import org.apache.shindig.auth.BlobCrypterSecurityToken;
-import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.auth.SecurityTokenCodec;
-import org.apache.shindig.auth.SecurityTokenException;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.common.uri.Uri;

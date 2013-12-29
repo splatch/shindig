@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.gadgets.render;
 
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.uri.UriBuilder;
 import org.apache.shindig.common.util.CharsetUtil;
@@ -51,6 +51,7 @@ public class ProxyRenderer {
   private final RequestPipeline requestPipeline;
   private final HttpCache httpCache;
   private final PipelineExecutor pipelineExecutor;
+private final JsonSerializer serializer;
 
   /**
    * @param requestPipeline Used for performing the proxy request. Always ignores caching because
@@ -60,10 +61,11 @@ public class ProxyRenderer {
    */
   @Inject
   public ProxyRenderer(RequestPipeline requestPipeline,
-      HttpCache httpCache, PipelineExecutor pipelineExecutor) {
+      HttpCache httpCache, PipelineExecutor pipelineExecutor, JsonSerializer serializer) {
     this.requestPipeline = requestPipeline;
     this.httpCache = httpCache;
     this.pipelineExecutor = pipelineExecutor;
+    this.serializer = serializer;
   }
 
   public String render(Gadget gadget) throws RenderingException, GadgetException {
@@ -133,7 +135,7 @@ public class ProxyRenderer {
         pipelineExecutor.execute(gadget.getContext(), ImmutableList.of(data));
 
       if (results != null && !results.results.isEmpty()) {
-        String postContent = JsonSerializer.serialize(results.results);
+        String postContent = serializer.serialize(results.results);
         // POST the preloaded content, with a method override of GET
         // to enable caching
         request.setMethod("POST")

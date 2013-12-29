@@ -21,7 +21,7 @@ package org.apache.shindig.gadgets.oauth.testing;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.util.CharsetUtil;
 import org.apache.shindig.gadgets.http.HttpFetcher;

@@ -18,23 +18,25 @@
  */
 package org.apache.shindig.gadgets.http;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import com.google.common.collect.ImmutableSet;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.cache.LruCacheProvider;
-import org.apache.shindig.common.testing.FakeGadgetToken;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.AuthType;
 import org.apache.shindig.gadgets.oauth.OAuthArguments;
 import org.apache.shindig.gadgets.rewrite.DefaultResponseRewriterRegistry;
 import org.easymock.IMocksControl;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public class DefaultInvalidationServiceTest extends Assert {
+public class DefaultInvalidationServiceTest {
 
   private static final Uri URI = Uri.parse("http://www.example.org/spec.xml");
   private static final HttpResponse CACHEABLE = new HttpResponseBuilder()
@@ -45,8 +47,8 @@ public class DefaultInvalidationServiceTest extends Assert {
   HttpCache cache;
   DefaultInvalidationService service;
   LruCacheProvider cacheProvider;
-  FakeGadgetToken appxToken;
-  FakeGadgetToken appyToken;
+  SecurityToken appxToken;
+  SecurityToken appyToken;
 
   DefaultRequestPipelineTest.FakeHttpFetcher fetcher;
   DefaultRequestPipelineTest.FakeOAuthRequestProvider oauth;
@@ -54,20 +56,16 @@ public class DefaultInvalidationServiceTest extends Assert {
   DefaultRequestPipeline requestPipeline;
   HttpRequest signedRequest;
 
-
   @Before
   public void setUp() {
     cacheProvider = new LruCacheProvider(100);
     cache = new DefaultHttpCache(cacheProvider);
     service = new DefaultInvalidationService(cache, cacheProvider, new AtomicLong());
-    appxToken = new FakeGadgetToken();
+    appxToken = mockToken("AppX", "OwnerX", "VieverX");
     appxToken.setAppId("AppX");
     appxToken.setOwnerId("OwnerX");
     appxToken.setViewerId("ViewerX");
-    appyToken = new FakeGadgetToken();
-    appyToken.setAppId("AppY");
-    appyToken.setOwnerId("OwnerY");
-    appyToken.setViewerId("ViewerY");
+    appyToken = mockToken("AppY", "OwnerY", "ViewerY");
 
     signedRequest = new HttpRequest(URI);
     signedRequest.setAuthType(AuthType.SIGNED);
@@ -84,7 +82,15 @@ public class DefaultInvalidationServiceTest extends Assert {
         new HttpResponseMetadataHelper());
   }
 
-  @Test
+  private SecurityToken mockToken(String app, String owner, String viever) {
+    SecurityToken mock = mock(SecurityToken.class);
+    when(mock.getAppId()).thenReturn(app);
+    when(mock.getOwnerId()).thenReturn(owner);
+    when(mock.getViewerId()).thenReturn(viever);
+    return mock;
+  }
+
+@Test
   public void testInvalidateUrl() throws Exception {
     cache.addResponse(new HttpRequest(URI), CACHEABLE);
     assertEquals(1, cacheProvider.createCache(DefaultHttpCache.CACHE_NAME).getSize());

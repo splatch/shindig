@@ -22,9 +22,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.common.servlet.HttpUtil;
+import org.apache.shindig.common.util.DefaultResourceLoader;
 import org.apache.shindig.common.util.HashUtil;
-import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.gadgets.uri.UriCommon;
 
 import java.io.IOException;
@@ -48,12 +49,12 @@ public class RpcSwfServlet extends HttpServlet {
   private int defaultSwfTtl = DEFAULT_SWF_TTL;
 
   public RpcSwfServlet() {
-    this(SWF_RESOURCE_NAME);
+    this(SWF_RESOURCE_NAME, new DefaultResourceLoader());
   }
 
-  public RpcSwfServlet(String swfResource) {
+  public RpcSwfServlet(String swfResource, ResourceLoader resourceLoader) {
     try {
-      InputStream is = ResourceLoader.openResource(swfResource);
+      InputStream is = resourceLoader.openResource(swfResource);
       if (is == null) {
         throw new RuntimeException("Failed to locate Flash SWF");
       }

@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.social.opensocial.spi;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.base.Objects;

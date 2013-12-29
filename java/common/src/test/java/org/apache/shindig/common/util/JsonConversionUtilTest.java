@@ -18,17 +18,16 @@
  */
 package org.apache.shindig.common.util;
 
-import com.google.common.collect.ImmutableList;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
-import org.apache.shindig.common.testing.FakeHttpServletRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +36,7 @@ import java.util.Map;
 /**
  * Test for conversion of a structured key-value set to a JSON object
  */
-public class JsonConversionUtilTest extends Assert {
+public class JsonConversionUtilTest {
 
   @Test
   public void testSimplePathToJsonParsing()
@@ -125,11 +124,8 @@ public class JsonConversionUtilTest extends Assert {
 
   @Test
   public void testJsonFromRequest() throws Exception {
-    HttpServletRequest fakeRequest;
-    for (String badParms : ImmutableList.of("x=1", "x=1&callback=")) {
-      fakeRequest = new FakeHttpServletRequest("http://foo.com/gadgets/rpc?" + badParms);
-      assertNull(JsonConversionUtil.fromRequest(fakeRequest));
-    }
+    HttpServletRequest mock = mock(HttpServletRequest.class);
+    assertNull(JsonConversionUtil.fromRequest(mock));
    }
 
   public static void assertJsonEquals(Object expected, Object actual)

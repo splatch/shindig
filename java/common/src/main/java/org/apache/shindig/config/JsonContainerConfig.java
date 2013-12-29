@@ -28,7 +28,9 @@ import org.json.JSONObject;
 import java.util.Iterator;
 
 // Temporary replacement of javax.annotation.Nullable
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.common.Nullable;
+import org.apache.shindig.common.util.DefaultResourceLoader;
 
 /**
  * Represents a container configuration using JSON notation.
@@ -46,7 +48,7 @@ public class JsonContainerConfig extends ExpressionContainerConfig {
 
   // Used by tests
   public JsonContainerConfig(String containers, Expressions expressions) throws ContainerConfigException {
-    this(containers, "localhost", "8080", "",expressions);
+    this(containers, "localhost", "8080", "",expressions, new DefaultResourceLoader());
   }
   /**
    * Creates a new configuration from files.
@@ -57,24 +59,25 @@ public class JsonContainerConfig extends ExpressionContainerConfig {
                              @Nullable @Named("shindig.host") String host,
                              @Nullable @Named("shindig.port") String port,
                              @Nullable @Named("shindig.contextroot") String contextRoot,
-                             Expressions expressions)
+                             Expressions expressions,
+                             ResourceLoader resourceLoader)
       throws ContainerConfigException {
     super(expressions);
-    JsonContainerConfigLoader.getTransactionFromFile(containers, host, port, contextRoot, this).commit();
+    JsonContainerConfigLoader.getTransactionFromFile(containers, host, port, contextRoot, this, resourceLoader).commit();
   }
 
   /**
    * Creates a new configuration from a JSON Object, for use in testing.
    * @throws ContainerConfigException
    */
-  public JsonContainerConfig(JSONObject json, Expressions expressions) throws ContainerConfigException {
+  public JsonContainerConfig(JSONObject json, Expressions expressions, ResourceLoader resourceLoader) throws ContainerConfigException {
     super(expressions);
     Transaction transaction = newTransaction();
     Iterator<?> keys = json.keys();
     while (keys.hasNext()) {
       JSONObject optJSONObject = json.optJSONObject((String) keys.next());
       if (optJSONObject != null) {
-        transaction.addContainer(JsonContainerConfigLoader.parseJsonContainer(optJSONObject));
+        transaction.addContainer(JsonContainerConfigLoader.parseJsonContainer(optJSONObject, resourceLoader));
       }
     }
     transaction.commit();

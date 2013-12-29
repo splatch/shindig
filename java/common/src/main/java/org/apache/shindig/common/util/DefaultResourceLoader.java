@@ -19,6 +19,7 @@
 package org.apache.shindig.common.util;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.shindig.api.io.ResourceLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,11 +30,15 @@ import java.io.InputStream;
 /**
  * Handles loading contents from resource and file system files.
  */
-public final class ResourceLoader {
+public final class DefaultResourceLoader implements ResourceLoader {
   public static final String RESOURCE_PREFIX = "res://";
   public static final String FILE_PREFIX = "file://";
 
-  private ResourceLoader() {}
+  @Override
+  public boolean accept(String path) {
+     return path.startsWith(RESOURCE_PREFIX) || path.startsWith(FILE_PREFIX);
+  }
+
   /**
    * Opens a given path as either a resource or a file, depending on the path
    * name.
@@ -43,7 +48,7 @@ public final class ResourceLoader {
    * @param path
    * @return The opened input stream
    */
-  public static InputStream open(String path) throws IOException {
+  public InputStream open(String path) throws IOException {
     if (path.startsWith(RESOURCE_PREFIX)) {
       return openResource(path.substring(RESOURCE_PREFIX.length()));
     } else if (path.startsWith(FILE_PREFIX)) {
@@ -59,8 +64,8 @@ public final class ResourceLoader {
    * @return An input stream for the given named resource
    * @throws FileNotFoundException
    */
-  public static InputStream openResource(String resource) throws FileNotFoundException  {
-    ClassLoader cl = ResourceLoader.class.getClassLoader();
+  public InputStream openResource(String resource) throws FileNotFoundException  {
+    ClassLoader cl = DefaultResourceLoader.class.getClassLoader();
     try {
       return openResource(cl, resource);
     } catch (FileNotFoundException e) {
@@ -78,7 +83,6 @@ public final class ResourceLoader {
    * @return An input stream for the given named resource
    * @throws FileNotFoundException
    */
-
   private static InputStream openResource(ClassLoader cl, String resource)
       throws FileNotFoundException {
     InputStream is = cl.getResourceAsStream(resource.trim());
@@ -95,7 +99,7 @@ public final class ResourceLoader {
    * @return Contents of the resource.
    * @throws IOException
    */
-  public static String getContent(String resource) throws IOException {
+  public String getContent(String resource) throws IOException {
     InputStream is = openResource(resource);
     try {
       return IOUtils.toString(is, "UTF-8");
@@ -109,7 +113,7 @@ public final class ResourceLoader {
    * @return The contents of the file (assumed to be UTF-8).
    * @throws IOException
    */
-  public static String getContent(File file) throws IOException {
+  public String getContent(File file) throws IOException {
     InputStream is = new FileInputStream(file);
     try {
       return IOUtils.toString(is, "UTF-8");

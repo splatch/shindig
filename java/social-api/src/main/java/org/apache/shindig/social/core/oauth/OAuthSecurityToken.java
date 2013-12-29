@@ -20,8 +20,9 @@ package org.apache.shindig.social.core.oauth;
 
 import java.util.EnumSet;
 
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AbstractSecurityToken;
-import org.apache.shindig.auth.AuthenticationMode;
 
 /**
  * A SecurityToken that represents two/three legged OAuth requests
@@ -64,6 +65,11 @@ public class OAuthSecurityToken extends AbstractSecurityToken {
 
   public String getAuthenticationMode() {
     return authMode;
+  }
+
+  @Override
+  public SecurityToken setAuthenticationMode(AuthenticationMode mode) {
+    throw new UnsupportedOperationException();
   }
 
   @Override

@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
 import org.apache.shindig.config.BasicContainerConfig;
 import org.junit.Test;
 

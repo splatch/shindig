@@ -21,6 +21,8 @@ package org.apache.shindig.gadgets.oauth;
 import java.util.EnumSet;
 import java.util.Map;
 
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AbstractSecurityToken;
 
 
@@ -45,6 +47,11 @@ public class OAuthCallbackStateToken extends AbstractSecurityToken {
   }
 
   public String getAuthenticationMode() {
+    return null;
+  }
+
+  @Override
+  public SecurityToken setAuthenticationMode(AuthenticationMode mode) {
     return null;
   }
 

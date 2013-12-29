@@ -18,12 +18,9 @@
  */
 package org.apache.shindig.gadgets.preload;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import org.apache.shindig.common.JsonAssert;
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.JsonUtil;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.expressions.Expressions;
@@ -123,7 +120,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
 
     String socialResult = "[{id:'p', result:1}, {id:'a', result:2}]";
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline(socialResult);
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
 
     view = "profile";
     contextParams.put("st", "token");
@@ -146,8 +143,8 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
     JSONObject resultWithKeyP = new JSONObject("{id: 'p', result: 1}");
     JSONObject resultWithKeyA = new JSONObject("{id: 'a', result: 2}");
     Map<String, String> resultsById = getResultsById(result);
-    JsonAssert.assertJsonEquals(resultWithKeyA.toString(), resultsById.get("a"));
-    JsonAssert.assertJsonEquals(resultWithKeyP.toString(), resultsById.get("p"));
+    assertJsonEquals(resultWithKeyA.toString(), resultsById.get("a"));
+    assertJsonEquals(resultWithKeyP.toString(), resultsById.get("p"));
 
     // Should have only fetched one request
     assertEquals(1, pipeline.requests.size());
@@ -165,7 +162,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
 
     String socialResult = "{code: 401, message: 'unauthorized'}";
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline(socialResult);
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
 
     view = "profile";
     contextParams.put("st", "token");
@@ -188,8 +185,8 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
     JSONObject resultWithKeyP = new JSONObject("{id: 'p', error: {code: 401, message: 'unauthorized'}}");
     JSONObject resultWithKeyA = new JSONObject("{id: 'a', error: {code: 401, message: 'unauthorized'}}");
     Map<String, String> resultsById = getResultsById(result);
-    JsonAssert.assertJsonEquals(resultWithKeyA.toString(), resultsById.get("a"));
-    JsonAssert.assertJsonEquals(resultWithKeyP.toString(), resultsById.get("p"));
+    assertJsonEquals(resultWithKeyA.toString(), resultsById.get("a"));
+    assertJsonEquals(resultWithKeyP.toString(), resultsById.get("p"));
   }
 
   @Test
@@ -200,7 +197,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
         .setHttpStatusCode(HttpResponse.SC_INTERNAL_SERVER_ERROR)
         .create();
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline(httpError);
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
 
     view = "profile";
     contextParams.put("st", "token");
@@ -220,8 +217,8 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
     JSONObject resultWithKeyP = new JSONObject("{id: 'p', error: {code: 500}}");
     JSONObject resultWithKeyA = new JSONObject("{id: 'a', error: {code: 500}}");
     Map<String, String> resultsById = getResultsById(result);
-    JsonAssert.assertJsonEquals(resultWithKeyA.toString(), resultsById.get("a"));
-    JsonAssert.assertJsonEquals(resultWithKeyP.toString(), resultsById.get("p"));
+    assertJsonEquals(resultWithKeyA.toString(), resultsById.get("a"));
+    assertJsonEquals(resultWithKeyP.toString(), resultsById.get("p"));
   }
 
   @Test
@@ -233,7 +230,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
     GadgetSpec spec = new GadgetSpec(GADGET_URL, XML);
 
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline("");
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
     view = "profile";
     // But don't set the security token
 
@@ -252,15 +249,15 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
     Collection<Object> result = data.toJson();
     assertEquals(2, result.size());
     Map<String, String> resultsById = getResultsById(result);
-    JsonAssert.assertJsonEquals(resultWithKeyA.toString(), resultsById.get("a"));
-    JsonAssert.assertJsonEquals(resultWithKeyP.toString(), resultsById.get("p"));
+    assertJsonEquals(resultWithKeyA.toString(), resultsById.get("a"));
+    assertJsonEquals(resultWithKeyP.toString(), resultsById.get("p"));
   }
 
   private Map<String, String> getResultsById(Collection<Object> result) {
     Map<String, String> resultsById = Maps.newHashMap();
     for (Object o : result) {
       resultsById.put((String) JsonUtil.getProperty(o, "id"),
-          JsonSerializer.serialize(o));
+          new DefaultJsonSerializer().serialize(o));
     }
 
     return resultsById;
@@ -339,12 +336,12 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
             "content: '{foo: \\'bar\\'}'}, id: 'p'}";
 
     String resultString = executeHttpPreload(response, XML_WITH_HTTP_REQUEST_FOR_TEXT);
-    JsonAssert.assertJsonEquals(expectedResult, resultString);
+    assertJsonEquals(expectedResult, resultString);
   }
 
   private void verifyHttpPreload(HttpResponse response, String expectedJson) throws Exception {
     String resultString = executeHttpPreload(response, XML_WITH_HTTP_REQUEST);
-    JsonAssert.assertJsonEquals(expectedJson, resultString);
+    assertJsonEquals(expectedJson, resultString);
   }
 
   /**
@@ -354,7 +351,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
     GadgetSpec spec = new GadgetSpec(GADGET_URL, xml);
 
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline(response);
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
     view = "profile";
 
     Gadget gadget = new Gadget()
@@ -389,7 +386,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
 
     String httpResult = "{foo: 'bar'}";
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline(httpResult);
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
     view = "profile";
 
     Gadget gadget = new Gadget()
@@ -416,7 +413,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
 
     String httpResult = "{foo: 'bar'}";
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline(httpResult);
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
     view = "profile";
 
     Gadget gadget = new Gadget()
@@ -446,7 +443,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
 
     String socialResult = "[{id:'p', result:1}, {id:'a', result:2}]";
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline(socialResult);
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
 
     view = "profile";
     contextParams.put("st", "token");
@@ -468,7 +465,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
     GadgetSpec spec = new GadgetSpec(GADGET_URL, XML_WITH_VARIABLE);
 
     RecordingRequestPipeline pipeline = new RecordingRequestPipeline("");
-    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, containerConfig);
+    PipelinedDataPreloader preloader = new PipelinedDataPreloader(pipeline, new DefaultJsonSerializer(), containerConfig);
 
     view = "profile";
     contextParams.put("st", "token");
@@ -488,7 +485,7 @@ public class PipelinedDataPreloaderTest extends PreloaderTestFixture {
     Collection<Object> result = tasks.iterator().next().call().toJson();
     assertEquals(1, result.size());
 
-    JsonAssert.assertObjectEquals("{id: 'p', result: 2}", result.iterator().next());
+    assertObjectEquals("{id: 'p', result: 2}", result.iterator().next());
   }
 
   private static class RecordingRequestPipeline implements RequestPipeline {

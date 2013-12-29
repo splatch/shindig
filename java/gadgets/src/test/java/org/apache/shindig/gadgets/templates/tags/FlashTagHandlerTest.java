@@ -82,7 +82,7 @@ public class FlashTagHandlerTest extends EasyMockTestCase {
     documentProvider = injector.getInstance(DOMImplementation.class);
     parser = injector.getInstance(NekoSimplifiedHtmlParser.class);
     featureRegistry = mock(FeatureRegistry.class, true);
-    handler = new FlashTagHandler(new BeanJsonConverter(injector), featureRegistry,
+    handler = new FlashTagHandler(new BeanJsonConverter(), featureRegistry,
         "http://example.org/ns", "9.0.115");
     result = parser.parseDom("");
 

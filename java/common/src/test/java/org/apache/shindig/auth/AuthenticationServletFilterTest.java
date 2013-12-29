@@ -18,8 +18,7 @@
  */
 package org.apache.shindig.auth;
 
-import org.apache.shindig.common.EasyMockTestCase;
-import org.apache.shindig.common.servlet.HttpServletResponseRecorder;
+import static org.mockito.Mockito.*;
 
 import com.google.common.collect.ImmutableList;
 import javax.servlet.FilterChain;
@@ -28,28 +27,31 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.servlet.ServletException;
 
-public class AuthenticationServletFilterTest extends EasyMockTestCase {
+@RunWith(MockitoJUnitRunner.class)
+public class AuthenticationServletFilterTest {
   private static final String TEST_AUTH_HEADER = "Test Authentication Header";
 
   private AuthenticationServletFilter filter;
 
+  @Mock
   private HttpServletRequest request;
+  @Mock
   private HttpServletResponse response;
-  private HttpServletResponseRecorder recorder;
+
+  @Mock
   private FilterChain chain;
-  private AuthenticationHandler nullStHandler;
+  @Mock
+  private AuthenticationHandler handler;
 
   @Before
   public void setup() {
-    request = mock(HttpServletRequest.class);
-    response  = mock(HttpServletResponse.class);
-    recorder = new HttpServletResponseRecorder(response);
-    chain = mock(FilterChain.class);
     filter = new AuthenticationServletFilter();
-    nullStHandler = new NullSecurityTokenAuthenticationHandler();
   }
 
   @Test(expected = ServletException.class)
@@ -59,24 +61,12 @@ public class AuthenticationServletFilterTest extends EasyMockTestCase {
 
   @Test
   public void testNullSecurityToken() throws Exception {
-    filter.setAuthenticationHandlers(ImmutableList.<AuthenticationHandler>of(nullStHandler));
-    filter.doFilter(request, recorder, chain);
-    assertEquals(TEST_AUTH_HEADER,
-        recorder.getHeader(AuthenticationServletFilter.WWW_AUTHENTICATE_HEADER));
+    when(handler.getWWWAuthenticateHeader(anyString())).thenReturn(TEST_AUTH_HEADER);
+
+    filter.setAuthenticationHandlers(ImmutableList.<AuthenticationHandler>of(handler));
+    filter.doFilter(request, response, chain);
+
+    verify(response).addHeader(AuthenticationServletFilter.WWW_AUTHENTICATE_HEADER, TEST_AUTH_HEADER);
   }
 
-  private static class NullSecurityTokenAuthenticationHandler implements AuthenticationHandler {
-    public String getName() {
-      return "TestAuth";
-    }
-
-    public SecurityToken getSecurityTokenFromRequest(HttpServletRequest request)
-        throws InvalidAuthenticationException {
-      return null;
-    }
-
-    public String getWWWAuthenticateHeader(String realm) {
-      return TEST_AUTH_HEADER;
-    }
-  }
 }

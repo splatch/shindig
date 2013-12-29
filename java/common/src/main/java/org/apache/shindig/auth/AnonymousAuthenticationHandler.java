@@ -23,6 +23,9 @@ import com.google.inject.name.Named;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
+
 /**
  * Handled Anonymous Authentication, including returning an "anonymous" security token.
  */

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.auth;
+package org.apache.shindig.api.auth;
 
 /**
  * Enumeration of known authentication modes

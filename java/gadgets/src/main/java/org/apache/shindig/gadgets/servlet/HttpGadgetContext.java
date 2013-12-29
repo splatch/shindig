@@ -18,8 +18,8 @@
  */
 package org.apache.shindig.gadgets.servlet;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AuthInfoUtil;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.apache.shindig.gadgets.RenderingContext;

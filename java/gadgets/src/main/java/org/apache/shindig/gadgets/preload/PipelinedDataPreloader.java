@@ -19,7 +19,7 @@
 package org.apache.shindig.gadgets.preload;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.common.JsonUtil;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.uri.UriBuilder;
@@ -60,13 +60,15 @@ import com.google.inject.Inject;
 public class PipelinedDataPreloader {
   private final RequestPipeline requestPipeline;
   private final ContainerConfig config;
+  private final JsonSerializer serializer;
 
   private static final Set<String> HTTP_RESPONSE_HEADERS =
     ImmutableSet.of("content-type", "location", "set-cookie");
 
   @Inject
-  public PipelinedDataPreloader(RequestPipeline requestPipeline, ContainerConfig config) {
+  public PipelinedDataPreloader(RequestPipeline requestPipeline, JsonSerializer serializer, ContainerConfig config) {
     this.requestPipeline = requestPipeline;
+    this.serializer = serializer;
     this.config = config;
   }
 
@@ -159,7 +161,7 @@ public class PipelinedDataPreloader {
       } else {
         Uri uri = getSocialUri(context, token);
 
-        String socialRequestsJson = JsonSerializer.serialize(socialRequests);
+        String socialRequestsJson = serializer.serialize(socialRequests);
         HttpRequest request = new HttpRequest(uri)
             .setIgnoreCache(context.getIgnoreCache())
             .setSecurityToken(context.getToken())
@@ -180,7 +182,7 @@ public class PipelinedDataPreloader {
       } else {
         // For error responses, unpack into the same error format used
         // for os:HttpRequest
-        responseText = JsonSerializer.serialize(
+        responseText = serializer.serialize(
             createJsonError(response.getHttpStatusCode(), null, response));
       }
 

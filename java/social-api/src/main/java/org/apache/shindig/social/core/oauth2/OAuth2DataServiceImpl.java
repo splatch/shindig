@@ -24,7 +24,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.shindig.common.util.ResourceLoader;
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.conversion.BeanConverter;
 import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
@@ -49,8 +49,9 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
   public OAuth2DataServiceImpl(
       @Named("shindig.canonical.json.db") String jsonLocation,
       @Named("shindig.bean.converter.json") BeanConverter converter,
-      @Named("shindig.contextroot") String contextroot) throws Exception {
-    String content = IOUtils.toString(ResourceLoader.openResource(jsonLocation), "UTF-8");
+      @Named("shindig.contextroot") String contextroot,
+      ResourceLoader resourceLoader) throws Exception {
+    String content = IOUtils.toString(resourceLoader.openResource(jsonLocation), "UTF-8");
     content = content.replace("%contextRoot%", contextroot);
     this.oauthDB = new JSONObject(content).getJSONObject("oauth2");
     this.converter = converter;

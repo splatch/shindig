@@ -25,6 +25,10 @@ import com.google.inject.name.Named;
 import net.oauth.OAuth;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.auth.SecurityTokenException;
 
 import java.util.Enumeration;
 import java.util.Map;
@@ -37,7 +41,7 @@ import javax.servlet.http.HttpServletRequest;
  * Produces security tokens by extracting the "st" parameter from the request url or post body.
  */
 public class UrlParameterAuthenticationHandler implements AuthenticationHandler {
-  private static final String SECURITY_TOKEN_PARAM = "st";
+  public static final String SECURITY_TOKEN_PARAM = "st";
 
   private final SecurityTokenCodec securityTokenCodec;
   private final Boolean oauthSSLrequired;

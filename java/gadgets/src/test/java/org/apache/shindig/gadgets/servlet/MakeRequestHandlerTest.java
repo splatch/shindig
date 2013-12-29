@@ -32,10 +32,10 @@ import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shindig.auth.AuthInfoUtil;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.HttpUtilTest;
 import org.apache.shindig.common.testing.FakeGadgetToken;
 import org.apache.shindig.common.uri.Uri;

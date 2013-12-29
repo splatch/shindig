@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.gadgets.RenderingContext;
 import org.apache.shindig.gadgets.config.ConfigContributor;
@@ -75,7 +76,7 @@ public class ConfigInjectionProcessorTest {
       }
     };
 
-    processor = new ConfigInjectionProcessor(registryProvider,
+    processor = new ConfigInjectionProcessor(registryProvider, new DefaultJsonSerializer(),
         new DefaultConfigProcessor(configContributors, containerConfig));
   }
 

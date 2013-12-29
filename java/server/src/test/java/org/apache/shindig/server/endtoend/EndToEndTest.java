@@ -18,9 +18,10 @@
  */
 package org.apache.shindig.server.endtoend;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.BasicSecurityToken;
 import org.apache.shindig.auth.BasicSecurityTokenCodec;
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.JsonAssert;
 import org.apache.shindig.common.crypto.BlobCrypterException;
 
@@ -63,7 +64,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Base class for end-to-end tests.
  */
-public class EndToEndTest {
+public class EndToEndTest extends JsonAssert {
   private static final String[] EXPECTED_RESOURCES = {
     "fetchPersonTest.xml",
     "fetchPeopleTest.xml",
@@ -87,6 +88,10 @@ public class EndToEndTest {
   private CollectingAlertHandler alertHandler;
   private SecurityToken token;
   private String language;
+
+  public EndToEndTest() {
+    super(new DefaultJsonSerializer());
+  }
 
   @Test
   public void checkResources() throws Exception {
@@ -229,9 +234,9 @@ public class EndToEndTest {
 
     JSONObject json = jsonObjects.get("json").getJSONObject("result");
     JSONObject expected = new JSONObject("{content: {key: 'value'}, status: 200}");
-    JsonAssert.assertJsonObjectEquals(expected, json);
+    assertJsonObjectEquals(expected, json);
 
-    JsonAssert.assertObjectEquals("{id: 'var', result: 'value'}", jsonObjects.get("var"));
+    assertObjectEquals("{id: 'var', result: 'value'}", jsonObjects.get("var"));
   }
 
   // TODO PML - convert this to use junit 4 Theories to simplify this.

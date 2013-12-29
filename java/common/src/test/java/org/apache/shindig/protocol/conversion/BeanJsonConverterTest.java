@@ -24,7 +24,6 @@ import org.apache.shindig.protocol.model.Model;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.Guice;
 import com.google.inject.TypeLiteral;
 
 import org.junit.Assert;
@@ -44,7 +43,7 @@ public class BeanJsonConverterTest extends Assert {
 
   @Before
   public void setUp() throws Exception {
-    beanJsonConverter = new BeanJsonConverter(Guice.createInjector());
+    beanJsonConverter = new BeanJsonConverter();
   }
 
   public interface GenericInterface<T> {

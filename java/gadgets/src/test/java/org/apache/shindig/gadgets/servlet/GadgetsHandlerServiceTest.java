@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.auth.SecurityTokenCodec;
-import org.apache.shindig.auth.SecurityTokenException;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.auth.SecurityTokenException;
 import org.apache.shindig.common.EasyMockTestCase;
 import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.uri.Uri;

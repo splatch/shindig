@@ -22,9 +22,8 @@ import static org.apache.shindig.config.ContainerConfig.DEFAULT_CONTAINER;
 import static org.apache.shindig.config.ContainerConfig.CONTAINER_KEY;
 import static org.apache.shindig.config.ContainerConfig.PARENT_KEY;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
-import org.apache.shindig.common.util.ResourceLoader;
+import org.apache.shindig.common.util.DefaultResourceLoader;
 import org.apache.shindig.expressions.Expressions;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -87,7 +86,7 @@ public class JsonContainerConfigLoaderTest {
 
   private void createConfigForTest(String containers) throws ContainerConfigException {
     JsonContainerConfigLoader
-        .getTransactionFromFile(containers, "localhost", "8080", "",config).commit();
+        .getTransactionFromFile(containers, "localhost", "8080", "",config, new DefaultResourceLoader()).commit();
   }
 
   @Before
@@ -280,14 +279,14 @@ public class JsonContainerConfigLoaderTest {
     // We use a JSON Object here to guarantee that we're well formed up front.
     JSONObject json = new JSONObject();
     json.put(CONTAINER_KEY, new String[]{DEFAULT_CONTAINER});
-    json.put(DYNAMICALLY_LOADED_VALUE_KEY, ResourceLoader.RESOURCE_PREFIX + testFile);
+    json.put(DYNAMICALLY_LOADED_VALUE_KEY, DefaultResourceLoader.RESOURCE_PREFIX + testFile);
 
     createConfigForTest(createTemporaryFile(json, ".json").getAbsolutePath());
 
     //Make sure that the file was properly loaded from the classpath...  If it doesnt start with the
     //resource prefix and it does contain the expected text then it was loaded properly.
     assertFalse(config.getString(DEFAULT_CONTAINER, DYNAMICALLY_LOADED_VALUE_KEY).
-        startsWith(ResourceLoader.RESOURCE_PREFIX));
+        startsWith(DefaultResourceLoader.RESOURCE_PREFIX));
     assertTrue(config.getString(DEFAULT_CONTAINER, DYNAMICALLY_LOADED_VALUE_KEY).contains(testFile));
   }
 
@@ -300,7 +299,7 @@ public class JsonContainerConfigLoaderTest {
     // We use a JSON Object here to guarantee that we're well formed up front.
     JSONObject json = new JSONObject();
     json.put(CONTAINER_KEY, new String[]{DEFAULT_CONTAINER});
-    json.put(DYNAMICALLY_LOADED_VALUE_KEY, ResourceLoader.FILE_PREFIX + temporaryFile.getAbsolutePath());
+    json.put(DYNAMICALLY_LOADED_VALUE_KEY, DefaultResourceLoader.FILE_PREFIX + temporaryFile.getAbsolutePath());
 
     createConfigForTest(createTemporaryFile(json, ".json").getAbsolutePath());
 
@@ -310,7 +309,7 @@ public class JsonContainerConfigLoaderTest {
   @Test
   public void resourceLoaderClasspathFailureTest() throws Exception {
     // Pointer to an invalid resource reference
-    String invalidResource = ResourceLoader.RESOURCE_PREFIX + "does-not-exist";
+    String invalidResource = DefaultResourceLoader.RESOURCE_PREFIX + "does-not-exist";
 
     // We use a JSON Object here to guarantee that we're well formed up front.
     JSONObject json = new JSONObject();
@@ -326,7 +325,7 @@ public class JsonContainerConfigLoaderTest {
   @Test
   public void resourceLoaderFileFailureTest() throws Exception {
     // Pointer to an invalid resource reference
-    String invalidResource = ResourceLoader.FILE_PREFIX + "does-not-exist";
+    String invalidResource = DefaultResourceLoader.FILE_PREFIX + "does-not-exist";
 
     // We use a JSON Object here to guarantee that we're well formed up front.
     JSONObject json = new JSONObject();

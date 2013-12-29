@@ -22,6 +22,8 @@ import com.google.inject.Inject;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shindig.api.auth.SecurityToken;
+
 /**
  * Wrapper class for AuthInfoUtil to provide injection with in request scope.
  */

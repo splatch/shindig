@@ -18,15 +18,28 @@
  */
 package org.apache.shindig.gadgets.variables;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetContext;
-import org.apache.shindig.gadgets.render.FakeMessageBundleFactory;
+import org.apache.shindig.gadgets.MessageBundleFactory;
 import org.apache.shindig.gadgets.spec.GadgetSpec;
+import org.apache.shindig.gadgets.spec.MessageBundle;
 import org.apache.shindig.gadgets.spec.SpecParserException;
-import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-public class BidiSubstituterTest extends Assert {
+@RunWith(MockitoJUnitRunner.class)
+public class BidiSubstituterTest {
+
+  @Mock
+  private MessageBundleFactory messageBundleFactory;
+
+  @Mock
+  private MessageBundle messageBundle;
 
   @Test
   public void testBidiWithRtl() throws Exception {
@@ -65,7 +78,9 @@ public class BidiSubstituterTest extends Assert {
     GadgetSpec spec = new GadgetSpec(Uri.parse("#"), xml);
     GadgetContext context = new GadgetContext();
 
-    BidiSubstituter substituter = new BidiSubstituter(new FakeMessageBundleFactory());
+    when(messageBundleFactory.getBundle(spec, context.getLocale(), context.getIgnoreCache(), context.getContainer(), context.getView())).thenReturn(messageBundle);
+    when(messageBundle.getLanguageDirection()).thenReturn(direction);
+    BidiSubstituter substituter = new BidiSubstituter(messageBundleFactory);
 
     Substitutions substitutions = new Substitutions();
     substituter.addSubstitutions(substitutions, context, spec);

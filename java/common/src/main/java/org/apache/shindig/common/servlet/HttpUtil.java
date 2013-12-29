@@ -21,7 +21,8 @@ package org.apache.shindig.common.servlet;
 import com.google.common.base.Preconditions;
 import org.apache.shindig.common.Pair;
 import org.apache.shindig.common.util.DateUtil;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.common.util.DefaultTimeSource;
+import org.apache.shindig.api.time.TimeSource;
 
 import com.google.common.collect.Lists;
 
@@ -40,11 +41,7 @@ public final class HttpUtil {
   // 1 year.
   private static int defaultTtl = 60 * 60 * 24 * 365;
 
-  private static TimeSource timeSource;
-
-  static {
-    setTimeSource(new TimeSource());
-  }
+  private static TimeSource timeSource = new DefaultTimeSource();
 
   public static void setTimeSource(TimeSource timeSource) {
     HttpUtil.timeSource = timeSource;

@@ -31,8 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shindig.auth.AuthInfoUtil;
-import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.util.Utf8UrlCoder;
@@ -100,16 +100,19 @@ public class MakeRequestHandler implements ContainerConfig.ConfigObserver {
   private final Processor processor;
   private final LockedDomainService lockedDomainService;
   private final Map<String, Integer> maxPostSizes;
+  private final JsonSerializer serializer;
 
   @Inject
   public MakeRequestHandler(
           ContainerConfig config,
           RequestPipeline requestPipeline,
+          JsonSerializer serializer,
           @RewriterRegistry(rewriteFlow = RewriteFlow.DEFAULT) ResponseRewriterRegistry contentRewriterRegistry,
           Provider<FeedProcessor> feedProcessorProvider, GadgetAdminStore gadgetAdminStore,
           Processor processor, LockedDomainService lockedDomainService) {
 
     this.requestPipeline = requestPipeline;
+    this.serializer = serializer;
     this.contentRewriterRegistry = contentRewriterRegistry;
     this.feedProcessorProvider = feedProcessorProvider;
     this.gadgetAdminStore = gadgetAdminStore;
@@ -383,7 +386,7 @@ public class MakeRequestHandler implements ContainerConfig.ConfigObserver {
     }
 
     // Use raw param as key as URL may have to be decoded
-    return JsonSerializer.serialize(Collections.singletonMap(originalUrl, resp));
+    return serializer.serialize(Collections.singletonMap(originalUrl, resp));
   }
 
   protected RequestPipeline getRequestPipeline() {

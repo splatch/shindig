@@ -24,7 +24,9 @@ import com.google.common.collect.Maps;
 import org.apache.shindig.auth.AbstractSecurityToken;
 import org.apache.shindig.common.crypto.BlobCrypter;
 import org.apache.shindig.common.crypto.BlobCrypterException;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.time.TimeSource;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -88,7 +90,7 @@ public class OAuthClientState extends AbstractSecurityToken {
     if (state == null) {
       state = Maps.newHashMap();
       setOwner(null);
-      setExpiresAt(null);
+      setExpiresAt(0L);
     }
     this.state = state;
   }
@@ -206,6 +208,11 @@ public class OAuthClientState extends AbstractSecurityToken {
   }
 
   public String getAuthenticationMode() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SecurityToken setAuthenticationMode(AuthenticationMode mode) {
     throw new UnsupportedOperationException();
   }
 

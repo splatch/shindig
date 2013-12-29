@@ -21,7 +21,7 @@ package org.apache.shindig.social.opensocial.spi;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RestfulCollection;
 import org.apache.shindig.social.opensocial.model.ActivityEntry;

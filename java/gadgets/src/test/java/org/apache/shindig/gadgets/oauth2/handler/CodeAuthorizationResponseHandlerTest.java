@@ -20,7 +20,7 @@ package org.apache.shindig.gadgets.oauth2.handler;
 
 import com.google.inject.Provider;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.oauth2.MockUtils;

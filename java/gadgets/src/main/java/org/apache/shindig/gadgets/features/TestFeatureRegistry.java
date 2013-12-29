@@ -25,7 +25,8 @@ import java.util.Map;
 import org.apache.shindig.api.cache.Cache;
 import org.apache.shindig.api.cache.CacheProvider;
 import org.apache.shindig.common.uri.Uri;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.common.util.DefaultResourceLoader;
+import org.apache.shindig.common.util.DefaultTimeSource;
 import org.apache.shindig.gadgets.GadgetException;
 
 import com.google.common.base.Joiner;
@@ -99,7 +100,7 @@ public class TestFeatureRegistry extends FeatureRegistry {
       TestCacheProvider cacheProvider,
       String featureFiles) throws GadgetException {
     super(resourceLoader, cacheProvider, ImmutableList.<String>of(featureFiles),
-        new DefaultFeatureFileSystem());
+        new DefaultFeatureFileSystem(new DefaultResourceLoader()));
     this.resourceLoader = resourceLoader;
     this.cacheProvider = cacheProvider;
   }
@@ -122,7 +123,7 @@ public class TestFeatureRegistry extends FeatureRegistry {
     private Map<String, String> lastAttribs;
 
     private TestFeatureResourceLoader(ResourceMock resourceMock) {
-      super(null, new TimeSource(), new DefaultFeatureFileSystem());
+      super(null, new DefaultTimeSource(), new DefaultFeatureFileSystem(new DefaultResourceLoader()));
       this.resourceMock = resourceMock;
     }
 

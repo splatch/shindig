@@ -21,10 +21,10 @@ package org.apache.shindig.gadgets.render;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AnonymousSecurityToken;
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.JsonAssert;
-import org.apache.shindig.common.JsonSerializer;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.uri.UriBuilder;
 import org.apache.shindig.common.xml.XmlUtil;
@@ -54,7 +54,7 @@ import com.google.common.collect.Maps;
 /**
  * Tests for ProxyRenderer.
  */
-public class ProxyRendererTest {
+public class ProxyRendererTest extends JsonAssert {
   private static final Uri SPEC_URL = Uri.parse("http://example.org/gadget.xml");
   private static final String PROXIED_HTML_CONTENT = "Hello, Universe!";
   private static final Uri PROXIED_HTML_HREF = Uri.parse("http://example.org/proxied.php");
@@ -79,6 +79,10 @@ public class ProxyRendererTest {
   private final FakePipelineExecutor pipelineExecutor = new FakePipelineExecutor();
   private final ProxyRenderer proxyRenderer = new ProxyRenderer(pipeline,
       cache, pipelineExecutor);
+
+  public ProxyRendererTest() {
+    super(new DefaultJsonSerializer());
+  }
 
   private Gadget makeGadget(String content) throws GadgetException {
     GadgetSpec spec = new GadgetSpec(SPEC_URL,
@@ -224,7 +228,7 @@ public class ProxyRendererTest {
     assertEquals("application/json;charset=utf-8", lastHttpRequest.getHeader("Content-Type"));
     String postBody = lastHttpRequest.getPostBodyAsString();
 
-    JsonAssert.assertJsonEquals(JsonSerializer.serialize(prefetchedJson), postBody);
+    assertJsonEquals(new DefaultJsonSerializer().serialize(prefetchedJson), postBody);
     assertTrue(pipelineExecutor.wasPreloaded);
   }
 

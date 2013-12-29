@@ -18,11 +18,13 @@
  */
 package org.apache.shindig.protocol.multipart;
 
-import org.apache.shindig.common.testing.FakeHttpServletRequest;
+import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.collect.Lists;
@@ -30,7 +32,11 @@ import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class DefaultMultipartFormParserTest extends Assert {
 
   private static final String REQUEST_FIELDNAME = "request";
@@ -47,6 +53,8 @@ public class DefaultMultipartFormParserTest extends Assert {
   private static final String PROFILE_IMAGE_TYPE = "image/png";
 
   private MultipartFormParser multipartFormParser;
+
+  @Mock
   private HttpServletRequest request;
 
   @Before
@@ -60,18 +68,16 @@ public class DefaultMultipartFormParserTest extends Assert {
    */
   @Test
   public void testIsMultipartContent() {
-    FakeHttpServletRequest request = new FakeHttpServletRequest();
-
-    request.setMethod("GET");
+    when(request.getMethod()).thenReturn("GET");
     assertFalse(multipartFormParser.isMultipartContent(request));
 
-    request.setMethod("POST");
+    when(request.getMethod()).thenReturn("POST");
     assertFalse(multipartFormParser.isMultipartContent(request));
 
-    request.setContentType("multipart/form-data");
+    when(request.getContentType()).thenReturn("multipart/form-data");
     assertTrue(multipartFormParser.isMultipartContent(request));
 
-    request.setMethod("GET");
+    when(request.getMethod()).thenReturn("GET");
     assertFalse(multipartFormParser.isMultipartContent(request));
 }
 
@@ -144,10 +150,17 @@ public class DefaultMultipartFormParserTest extends Assert {
   }
 
   private void setupRequest(byte[] postData, String contentType) throws IOException {
-    FakeHttpServletRequest fakeReq = new FakeHttpServletRequest("/social/rest", "", "");
-    fakeReq.setPostData(postData);
-    fakeReq.setContentType(contentType);
-    request = fakeReq;
+    final ByteArrayInputStream stream = new ByteArrayInputStream(postData);
+    when(request.getMethod()).thenReturn("POST");
+    when(request.getContentLength()).thenReturn(postData.length);
+    when(request.getInputStream()).thenReturn(new ServletInputStream() {
+        @Override
+        public int read() throws IOException {
+            return stream.read();
+        }
+    });
+    when(request.getRequestURL()).thenReturn(new StringBuffer("/social/rest"));
+    when(request.getContentType()).thenReturn(contentType);
   }
 
   @Test

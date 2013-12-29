@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.gadgets.http;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.uri.Uri;
 
 import com.google.inject.ImplementedBy;

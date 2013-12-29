@@ -21,8 +21,8 @@ package org.apache.shindig.gadgets.admin;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
-import org.apache.shindig.common.util.ResourceLoader;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -50,14 +50,14 @@ public class GadgetAdminModule extends AbstractModule {
     private BasicGadgetAdminStore store;
 
     @Inject
-    public GadgetAdminStoreProvider(BasicGadgetAdminStore store) {
+    public GadgetAdminStoreProvider(BasicGadgetAdminStore store, ResourceLoader loader) {
       this.store = store;
-      loadStore();
+      loadStore(loader);
     }
 
-    private void loadStore() {
+    private void loadStore(ResourceLoader resourceLoader) {
       try {
-        String gadgetAdminString = ResourceLoader.getContent(GADGET_ADMIN_CONFIG);
+        String gadgetAdminString = resourceLoader.getContent(GADGET_ADMIN_CONFIG);
         this.store.init(gadgetAdminString);
       } catch (Throwable t) {
         if (LOG.isLoggable(Level.WARNING)) {

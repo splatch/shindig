@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.auth;
-
-import com.google.inject.ImplementedBy;
+package org.apache.shindig.api.auth;
 
 import java.util.Map;
 
@@ -27,7 +25,6 @@ import java.util.Map;
  *
  * @since 2.0.0
  */
-@ImplementedBy(DefaultSecurityTokenCodec.class)
 public interface SecurityTokenCodec {
 
   /**

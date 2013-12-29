@@ -18,9 +18,11 @@
  */
 package org.apache.shindig.gadgets.http;
 
-import org.apache.shindig.auth.AuthenticationMode;
-import org.apache.shindig.common.EasyMockTestCase;
-import org.apache.shindig.common.testing.FakeGadgetToken;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.protocol.DefaultHandlerRegistry;
@@ -34,11 +36,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expectLastCall;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -46,16 +48,19 @@ import java.util.concurrent.ExecutionException;
 /**
  * Basic test of invalidation handler
  */
-public class InvalidationHandlerTest extends EasyMockTestCase {
+@RunWith(MockitoJUnitRunner.class)
+public class InvalidationHandlerTest {
 
+  @Mock
   private BeanJsonConverter converter;
 
+  @Mock
   private InvalidationService invalidationService;
 
+  @Mock
+  private SecurityToken token;
+
   private InvalidationHandler handler;
-
-  private FakeGadgetToken token;
-
   private Map<String, String[]> params;
 
   protected HandlerRegistry registry;
@@ -63,12 +68,9 @@ public class InvalidationHandlerTest extends EasyMockTestCase {
 
   @Before
   public void setUp() throws Exception {
-    token = new FakeGadgetToken();
-    token.setAppId("appId");
-    token.setViewerId("userX");
+    when(token.getAppId()).thenReturn("appId");
+    when(token.getViewerId()).thenReturn("userX");
 
-    converter = mock(BeanJsonConverter.class);
-    invalidationService = mock(InvalidationService.class);
 
     handler = new InvalidationHandler(invalidationService);
     registry = new DefaultHandlerRegistry(null, converter,
@@ -83,15 +85,11 @@ public class InvalidationHandlerTest extends EasyMockTestCase {
     String path = "/cache/invalidate";
     RestHandler operation = registry.getRestHandler(path, "GET");
 
-    invalidationService.invalidateUserResources(
+    operation.execute(params, null, token, converter).get();
+
+    verify(invalidationService).invalidateUserResources(
         eq(ImmutableSet.of("userX")),
         eq(token));
-    expectLastCall();
-
-    replay();
-    operation.execute(params, null, token, converter).get();
-    verify();
-    reset();
   }
 
   @Test
@@ -99,16 +97,13 @@ public class InvalidationHandlerTest extends EasyMockTestCase {
     String path = "/cache/invalidate";
     RestHandler operation = registry.getRestHandler(path, "POST");
     params.put(InvalidationHandler.KEYS_PARAM, new String[]{"http://www.example.org/gadget.xml"});
-    token.setAuthenticationMode(AuthenticationMode.OAUTH_CONSUMER_REQUEST.name());
-    invalidationService.invalidateApplicationResources(
+    token.setAuthenticationMode(AuthenticationMode.OAUTH_CONSUMER_REQUEST);
+
+    operation.execute(params, null, token, converter).get();
+
+    verify(invalidationService).invalidateApplicationResources(
         eq(ImmutableSet.of(Uri.parse("http://www.example.org/gadget.xml"))),
         eq(token));
-    expectLastCall();
-
-    replay();
-    operation.execute(params, null, token, converter).get();
-    verify();
-    reset();
   }
 
   @Test

@@ -16,19 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.auth;
+package org.apache.shindig.protocol.conversion;
+
+import org.apache.shindig.api.json.JsonSerializer;
+
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 /**
- * Exceptions thrown by SecurityTokenCodec implementations.
+ * Converts between JSON and java objects with injection support.
  */
-public class SecurityTokenException extends Exception {
-  public SecurityTokenException(String message) {
-    super(message);
+public class InjectingBeanJsonConverter extends BeanJsonConverter {
+
+  private final Injector injector;
+
+  @Inject
+  public InjectingBeanJsonConverter(Injector injector) {
+    super(injector.getInstance(JsonSerializer.class));
+    this.injector = injector;
   }
-  public SecurityTokenException(Exception cause) {
-    super(cause);
-  }
-  public SecurityTokenException(String message, Exception cause) {
-    super(message, cause);
+
+  @Override
+  protected Object create(Class<?> type) {
+    return injector.getInstance(type);
   }
 }

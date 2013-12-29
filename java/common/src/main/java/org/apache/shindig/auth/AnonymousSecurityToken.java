@@ -20,7 +20,8 @@ package org.apache.shindig.auth;
 
 import java.util.EnumSet;
 
-import org.apache.shindig.common.Nullable;
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.config.ContainerConfig;
 
 /**
@@ -60,13 +61,13 @@ public class AnonymousSecurityToken extends AbstractSecurityToken implements Sec
 
   // Anon Security Tokens have no need to expire
   @Override
-  protected AbstractSecurityToken setExpires() {
+  public AbstractSecurityToken setExpires() {
     return this;
   }
 
   // Anon Security Tokens have no need to expire
   @Override
-  protected AbstractSecurityToken setExpiresAt(Long expiresAt) {
+  public AbstractSecurityToken setExpiresAt(long expiresAt) {
     return this;
   }
 
@@ -80,6 +81,11 @@ public class AnonymousSecurityToken extends AbstractSecurityToken implements Sec
 
   public String getAuthenticationMode() {
     return AuthenticationMode.UNAUTHENTICATED.name();
+  }
+
+  @Override
+  public SecurityToken setAuthenticationMode(AuthenticationMode mode) {
+    throw new UnsupportedOperationException();
   }
 
   public String getActiveUrl() {

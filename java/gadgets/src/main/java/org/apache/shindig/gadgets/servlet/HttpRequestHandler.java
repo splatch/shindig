@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.JsonProperty;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.uri.Uri;

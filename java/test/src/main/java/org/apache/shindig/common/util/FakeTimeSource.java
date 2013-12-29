@@ -16,24 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.gadgets.render;
+package org.apache.shindig.common.util;
 
-import org.apache.shindig.gadgets.MessageBundleFactory;
-import org.apache.shindig.gadgets.spec.GadgetSpec;
-import org.apache.shindig.gadgets.spec.LocaleSpec;
-import org.apache.shindig.gadgets.spec.MessageBundle;
-
-import java.util.Locale;
+import org.apache.shindig.api.time.TimeSource;
 
 /**
- * Simple message bundle factory -- only honors inline bundles.
+ * Fake time source for dependency injection.
  */
-public class FakeMessageBundleFactory implements MessageBundleFactory {
-  public MessageBundle getBundle(GadgetSpec spec, Locale locale, boolean ignoreCache, String container, String view) {
-    LocaleSpec localeSpec = spec.getModulePrefs().getLocale(locale, view);
-    if (localeSpec == null) {
-      return MessageBundle.EMPTY;
-    }
-    return spec.getModulePrefs().getLocale(locale, view).getMessageBundle();
+public class FakeTimeSource implements TimeSource {
+
+  public long now;
+
+  public FakeTimeSource() {
+    this(System.currentTimeMillis());
+  }
+
+  public FakeTimeSource(long now) {
+    this.now = now;
+  }
+
+  @Override
+  public long currentTimeMillis() {
+    return now;
+  }
+
+  public void setCurrentTimeMillis(long now) {
+    this.now = now;
+  }
+
+  public void incrementSeconds(int seconds) {
+    now += seconds*1000;
   }
 }

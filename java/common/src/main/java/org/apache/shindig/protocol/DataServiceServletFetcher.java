@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.protocol;
 
-import org.apache.shindig.auth.SecurityTokenCodec;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
 import org.apache.shindig.common.servlet.ParameterFetcher;
 
 import com.google.common.collect.ImmutableMap;

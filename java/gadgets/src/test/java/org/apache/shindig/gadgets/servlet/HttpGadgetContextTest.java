@@ -20,9 +20,9 @@ package org.apache.shindig.gadgets.servlet;
 
 import static org.easymock.EasyMock.expect;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AnonymousSecurityToken;
 import org.apache.shindig.auth.AuthInfoUtil;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.junit.Test;
 

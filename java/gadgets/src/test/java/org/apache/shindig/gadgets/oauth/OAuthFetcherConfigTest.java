@@ -19,7 +19,7 @@
 package org.apache.shindig.gadgets.oauth;
 
 import org.apache.shindig.common.crypto.BlobCrypter;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.common.util.DefaultTimeSource;
 import org.apache.shindig.common.EasyMockTestCase;
 import org.apache.shindig.gadgets.http.HttpCache;
 
@@ -36,7 +36,7 @@ public class OAuthFetcherConfigTest extends EasyMockTestCase {
     mock(HttpCache.class);
     GadgetOAuthTokenStore tokenStore = mock(GadgetOAuthTokenStore.class);
     OAuthCallbackGenerator callbackGenerator = mock(OAuthCallbackGenerator.class);
-    OAuthFetcherConfig config = new OAuthFetcherConfig(crypter, tokenStore, new TimeSource(),
+    OAuthFetcherConfig config = new OAuthFetcherConfig(crypter, tokenStore, new DefaultTimeSource(),
         callbackGenerator, false);
     assertEquals(crypter, config.getStateCrypter());
     assertEquals(tokenStore, config.getTokenStore());

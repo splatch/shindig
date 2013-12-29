@@ -18,6 +18,8 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AbstractSecurityToken;
 
 import java.io.Serializable;
@@ -79,6 +81,11 @@ public class OAuth2CallbackStateToken extends AbstractSecurityToken implements S
   }
 
   public String getAuthenticationMode() {
+    return null;
+  }
+
+  @Override
+  public SecurityToken setAuthenticationMode(AuthenticationMode mode) {
     return null;
   }
 

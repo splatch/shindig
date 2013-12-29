@@ -30,13 +30,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.auth.SecurityTokenCodec;
-import org.apache.shindig.auth.SecurityTokenException;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.auth.SecurityTokenException;
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.uri.Uri;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.api.time.TimeSource;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.GadgetContext;

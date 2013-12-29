@@ -24,6 +24,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.auth.SecurityTokenException;
 import org.apache.shindig.common.crypto.BlobCrypterException;
 import org.apache.shindig.common.util.Utf8UrlCoder;
 import org.apache.shindig.config.ContainerConfig;

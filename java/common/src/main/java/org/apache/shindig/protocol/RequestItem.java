@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.protocol;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.protocol.model.FilterOperation;
 import org.apache.shindig.protocol.model.SortOrder;
 import org.apache.shindig.protocol.multipart.FormDataItem;

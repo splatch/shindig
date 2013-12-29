@@ -26,7 +26,7 @@ import net.sf.ehcache.pool.sizeof.annotations.IgnoreSizeOf;
 
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.uri.Uri;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.api.time.TimeSource;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.http.HttpRequest;

@@ -21,8 +21,11 @@ package org.apache.shindig.auth;
 import java.util.EnumSet;
 import java.util.Map;
 
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.time.TimeSource;
 import org.apache.shindig.common.crypto.BlobExpiredException;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.common.util.DefaultTimeSource;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
@@ -40,126 +43,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
 
   public static final int DEFAULT_MAX_TOKEN_TTL = 3600; // 1 hour
 
-  private static final TimeSource TIME_SOURCE = new TimeSource();
-
-  public enum Keys {
-    OWNER("o") {
-      public String getValue(SecurityToken token) {
-        return token.getOwnerId();
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        token.setOwnerId(map.get(key));
-      }
-    },
-    VIEWER("v") {
-      public String getValue(SecurityToken token) {
-        return token.getViewerId();
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        token.setViewerId(map.get(key));
-      }
-    },
-    APP_ID("i") {
-      public String getValue(SecurityToken token) {
-        return token.getAppId();
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        token.setAppId(map.get(key));
-      }
-    },
-    DOMAIN("d") {
-      public String getValue(SecurityToken token) {
-        return token.getDomain();
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        token.setDomain(map.get(key));
-      }
-    },
-    CONTAINER("c") {
-      public String getValue(SecurityToken token) {
-        return token.getContainer();
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        token.setContainer(map.get(key));
-      }
-    },
-    APP_URL("u") {
-      public String getValue(SecurityToken token) {
-        return token.getAppUrl();
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        token.setAppUrl(map.get(key));
-      }
-    },
-    MODULE_ID("m") {
-      public String getValue(SecurityToken token) {
-        long value = token.getModuleId();
-        if (value == 0) {
-          return null;
-        }
-        return Long.toString(token.getModuleId(), 10);
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        String value = map.get(key);
-        if (value != null) {
-          token.setModuleId(Long.parseLong(value, 10));
-        }
-      }
-    },
-    EXPIRES("x") {
-      public String getValue(SecurityToken token) {
-        Long value = token.getExpiresAt();
-        if (value == null) {
-          return null;
-        }
-        return Long.toString(token.getExpiresAt(), 10);
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        String value = map.get(key);
-        if (value != null) {
-          token.setExpiresAt(Long.parseLong(value, 10));
-        }
-      }
-    },
-    TRUSTED_JSON("j") {
-      public String getValue(SecurityToken token) {
-        return token.getTrustedJson();
-      }
-      public void loadFromMap(AbstractSecurityToken token, Map<String, String> map) {
-        token.setTrustedJson(map.get(key));
-      }
-    };
-
-    protected String key;
-    private Keys(String key) {
-      this.key = key;
-    }
-
-    /**
-     * @return The key this {@link Keys} is bound to.
-     */
-    public String getKey() {
-      return key;
-    }
-
-    /**
-     * Gets the {@link String} value from the {@link SecurityToken} using the getter that
-     * this {@link Keys} is bound to.
-     *
-     * @param token The token to get the value from.
-     * @return The value
-     */
-    public abstract String getValue(SecurityToken token);
-
-    /**
-     * Loads from the map the value bound to this {@link Keys} and sets it on the
-     * {@link SecurityToken}
-     *
-     * @param token The token to insert set the value on.
-     * @param map The map to read the value from.
-     */
-    public abstract void loadFromMap(AbstractSecurityToken token, Map<String, String> map);
-  }
+  private static final TimeSource TIME_SOURCE = new DefaultTimeSource();
 
   private String ownerId;
   private String viewerId;
@@ -194,7 +78,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return ownerId;
   }
 
-  protected AbstractSecurityToken setOwnerId(String ownerId) {
+  public AbstractSecurityToken setOwnerId(String ownerId) {
     this.ownerId = ownerId;
     return this;
   }
@@ -203,7 +87,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return viewerId;
   }
 
-  protected AbstractSecurityToken setViewerId(String viewerId) {
+  public AbstractSecurityToken setViewerId(String viewerId) {
     this.viewerId = viewerId;
     return this;
   }
@@ -212,7 +96,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return appId;
   }
 
-  protected AbstractSecurityToken setAppId(String appId) {
+  public AbstractSecurityToken setAppId(String appId) {
     this.appId = appId;
     return this;
   }
@@ -221,7 +105,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return domain;
   }
 
-  protected AbstractSecurityToken setDomain(String domain) {
+  public AbstractSecurityToken setDomain(String domain) {
     this.domain = domain;
     return this;
   }
@@ -230,7 +114,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return container;
   }
 
-  protected AbstractSecurityToken setContainer(String container) {
+  public AbstractSecurityToken setContainer(String container) {
     this.container = container;
     return this;
   }
@@ -239,7 +123,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return appUrl;
   }
 
-  protected AbstractSecurityToken setAppUrl(String appUrl) {
+  public AbstractSecurityToken setAppUrl(String appUrl) {
     this.appUrl = appUrl;
     return this;
   }
@@ -248,7 +132,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return moduleId;
   }
 
-  protected AbstractSecurityToken setModuleId(long moduleId) {
+  public AbstractSecurityToken setModuleId(long moduleId) {
     this.moduleId = moduleId;
     return this;
   }
@@ -263,7 +147,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
    * @return This security token.
    * @see #setExpires(int)
    */
-  protected AbstractSecurityToken setExpires() {
+  public AbstractSecurityToken setExpires() {
     return setExpires(DEFAULT_MAX_TOKEN_TTL);
   }
 
@@ -273,9 +157,9 @@ public abstract class AbstractSecurityToken implements SecurityToken {
    * @param tokenTTL the time to live (in seconds) of the token
    * @return This security token.
    */
-  protected AbstractSecurityToken setExpires(int tokenTTL) {
+  public AbstractSecurityToken setExpires(int tokenTTL) {
     this.tokenTTL = tokenTTL;
-    return setExpiresAt((getTimeSource().currentTimeMillis() / 1000) + getMaxTokenTTL());
+    return (AbstractSecurityToken) setExpiresAt((getTimeSource().currentTimeMillis() / 1000) + getMaxTokenTTL());
   }
 
   /**
@@ -284,7 +168,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
    * @param expiresAt When this token expires, in seconds since epoch.
    * @return This security token.
    */
-  protected AbstractSecurityToken setExpiresAt(Long expiresAt) {
+  public AbstractSecurityToken setExpiresAt(long expiresAt) {
     this.expiresAt = expiresAt;
     return this;
   }
@@ -293,7 +177,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return trustedJson;
   }
 
-  protected AbstractSecurityToken setTrustedJson(String trustedJson) {
+  public AbstractSecurityToken setTrustedJson(String trustedJson) {
     this.trustedJson = trustedJson;
     return this;
   }

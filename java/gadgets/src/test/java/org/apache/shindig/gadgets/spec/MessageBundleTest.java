@@ -20,6 +20,7 @@ package org.apache.shindig.gadgets.spec;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlUtil;
 
@@ -68,7 +69,7 @@ public class MessageBundleTest {
 
   @Test
   public void normalMessageBundleParsesOk() throws Exception {
-    MessageBundle bundle = new MessageBundle(locale, XML);
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), locale, XML);
     assertEquals(MESSAGES, bundle.getMessages());
   }
 
@@ -79,7 +80,7 @@ public class MessageBundleTest {
       "  <msg name='key'>value</msg>" +
       "  <msg name='key'>value</msg>" +
       "</messagebundle>";
-    MessageBundle bundle = new MessageBundle(locale, duplicateKeyXml);
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), locale, duplicateKeyXml);
     assertEquals(ImmutableMap.of("key", "value"), bundle.getMessages());
   }
 
@@ -89,33 +90,33 @@ public class MessageBundleTest {
        "<messagebundle>" +
        "  <msg name='key'><![CDATA[<span id='foo'>data</span>]]></msg>" +
        "</messagebundle>";
-    MessageBundle bundle = new MessageBundle(locale, cdataXml);
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), locale, cdataXml);
     assertEquals(ImmutableMap.of("key", "<span id='foo'>data</span>"), bundle.getMessages());
   }
 
   @Test(expected = SpecParserException.class)
   public void missingNameThrows() throws SpecParserException {
     String xml = "<messagebundle><msg>foo</msg></messagebundle>";
-    new MessageBundle(locale, xml);
+    new MessageBundle(new DefaultJsonSerializer(), locale, xml);
   }
 
   @Test(expected = SpecParserException.class)
   public void malformedXmlThrows() throws SpecParserException {
     String xml = "</messagebundle>";
-    new MessageBundle(locale, xml);
+    new MessageBundle(new DefaultJsonSerializer(), locale, xml);
   }
 
   @Test
   public void extractFromElement() throws Exception {
     Element element = XmlUtil.parse(XML);
-    MessageBundle bundle = new MessageBundle(element);
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), element);
     assertEquals(MESSAGES, bundle.getMessages());
   }
 
   @Test
   public void extractFromElementWithLanguageDir() throws Exception {
     Element element = XmlUtil.parse(PARENT_LOCALE);
-    MessageBundle bundle = new MessageBundle(element);
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), element);
     assertEquals("rtl", bundle.getLanguageDirection());
   }
 
@@ -123,7 +124,7 @@ public class MessageBundleTest {
   public void extractFromElementsWithNoName() throws Exception {
     String xml = "<messagebundle><msg>foo</msg></messagebundle>";
     Element element = XmlUtil.parse(xml);
-    new MessageBundle(element);
+    new MessageBundle(new DefaultJsonSerializer(), element);
   }
 
   @Test
@@ -131,15 +132,15 @@ public class MessageBundleTest {
     String xml = "<messagebundle><msg name='key'>This is <x>nested</x> content</msg>" +
                  "</messagebundle>";
     Element element = XmlUtil.parse(xml);
-    MessageBundle bundle = new MessageBundle(element);
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), element);
     assertEquals("This is <x>nested</x> content", bundle.getMessages().get("key"));
   }
 
   @Test
   public void merge() throws Exception {
-    MessageBundle parent = new MessageBundle(XmlUtil.parse(PARENT_LOCALE));
-    MessageBundle child = new MessageBundle(XmlUtil.parse(XML));
-    MessageBundle bundle = new MessageBundle(parent, child);
+    MessageBundle parent = new MessageBundle(new DefaultJsonSerializer(), XmlUtil.parse(PARENT_LOCALE));
+    MessageBundle child = new MessageBundle(new DefaultJsonSerializer(), XmlUtil.parse(XML));
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), parent, child);
     assertEquals("ltr", bundle.getLanguageDirection());
     assertEquals("VALUE", bundle.getMessages().get("one"));
     assertEquals("bar", bundle.getMessages().get("foo"));
@@ -147,8 +148,8 @@ public class MessageBundleTest {
 
   @Test
   public void toStringIsSane() throws Exception {
-    MessageBundle b0 = new MessageBundle(locale, XML);
-    MessageBundle b1 = new MessageBundle(locale, b0.toString());
+    MessageBundle b0 = new MessageBundle(new DefaultJsonSerializer(), locale, XML);
+    MessageBundle b1 = new MessageBundle(new DefaultJsonSerializer(), locale, b0.toString());
     assertEquals(b0.getMessages(), b1.getMessages());
   }
 
@@ -161,7 +162,7 @@ public class MessageBundleTest {
 
   @Test
   public void toJSONStringMatchesValues() throws Exception {
-    MessageBundle simple = new MessageBundle(XmlUtil.parse(PARENT_LOCALE));
+    MessageBundle simple = new MessageBundle(new DefaultJsonSerializer(), XmlUtil.parse(PARENT_LOCALE));
 
     JSONObject fromString = new JSONObject(simple.toJSONString());
     JSONObject fromMap = new JSONObject(simple.getMessages());
@@ -170,7 +171,7 @@ public class MessageBundleTest {
 
   @Test
   public void toJSONStringMatchesValuesLocaleCtor() throws Exception {
-    MessageBundle bundle = new MessageBundle(locale, XML);
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), locale, XML);
 
     JSONObject fromString = new JSONObject(bundle.toJSONString());
     JSONObject fromMap = new JSONObject(bundle.getMessages());
@@ -179,9 +180,9 @@ public class MessageBundleTest {
 
   @Test
   public void toJSONStringMatchesValuesWithChild() throws Exception {
-    MessageBundle parent = new MessageBundle(XmlUtil.parse(PARENT_LOCALE));
-    MessageBundle child = new MessageBundle(XmlUtil.parse(XML));
-    MessageBundle bundle = new MessageBundle(parent, child);
+    MessageBundle parent = new MessageBundle(new DefaultJsonSerializer(), XmlUtil.parse(PARENT_LOCALE));
+    MessageBundle child = new MessageBundle(new DefaultJsonSerializer(), XmlUtil.parse(XML));
+    MessageBundle bundle = new MessageBundle(new DefaultJsonSerializer(), parent, child);
 
     JSONObject fromString = new JSONObject(bundle.toJSONString());
     JSONObject fromMap = new JSONObject(bundle.getMessages());

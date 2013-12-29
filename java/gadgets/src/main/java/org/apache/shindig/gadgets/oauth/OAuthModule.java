@@ -18,12 +18,12 @@
  */
 package org.apache.shindig.gadgets.oauth;
 
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.common.crypto.BasicBlobCrypter;
 import org.apache.shindig.common.crypto.BlobCrypter;
 import org.apache.shindig.common.crypto.Crypto;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.servlet.Authority;
-import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.oauth.BasicOAuthStoreConsumerKeyAndSecret.KeyType;
 
@@ -121,22 +121,23 @@ public class OAuthModule extends AbstractModule {
         @Named(OAUTH_SIGNING_KEY_FILE) String signingKeyFile,
         @Named(OAUTH_SIGNING_KEY_NAME) String signingKeyName,
         @Named(OAUTH_CALLBACK_URL) String defaultCallbackUrl,
+        ResourceLoader resourceLoader,
         Authority authority) {
-      store = new BasicOAuthStore();
-      loadDefaultKey(signingKeyFile, signingKeyName);
+    store = new BasicOAuthStore();
+      loadDefaultKey(signingKeyFile, signingKeyName, resourceLoader);
       store.setDefaultCallbackUrl(defaultCallbackUrl);
       store.setAuthority(authority);
-      loadConsumers();
+      loadConsumers(resourceLoader);
     }
 
-    private void loadDefaultKey(String signingKeyFile, String signingKeyName) {
+    private void loadDefaultKey(String signingKeyFile, String signingKeyName, ResourceLoader resourceLoader) {
       BasicOAuthStoreConsumerKeyAndSecret key = null;
       if (!StringUtils.isBlank(signingKeyFile)) {
         try {
           if (LOG.isLoggable(Level.INFO)) {
             LOG.logp(Level.INFO, classname, "loadDefaultKey", MessageKeys.LOAD_KEY_FILE_FROM, new Object[] {signingKeyFile});
           }
-          String privateKey = IOUtils.toString(ResourceLoader.open(signingKeyFile), "UTF-8");
+          String privateKey = IOUtils.toString(resourceLoader.open(signingKeyFile), "UTF-8");
           privateKey = BasicOAuthStore.convertFromOpenSsl(privateKey);
           key = new BasicOAuthStoreConsumerKeyAndSecret(null, privateKey, KeyType.RSA_PRIVATE,
               signingKeyName, null);
@@ -156,9 +157,9 @@ public class OAuthModule extends AbstractModule {
       }
     }
 
-    private void loadConsumers() {
+    private void loadConsumers(ResourceLoader resourceLoader) {
       try {
-        String oauthConfigString = ResourceLoader.getContent(OAUTH_CONFIG);
+        String oauthConfigString = resourceLoader.getContent(OAUTH_CONFIG);
         store.initFromConfigString(oauthConfigString);
       } catch (Throwable t) {
         if (LOG.isLoggable(Level.WARNING)) {

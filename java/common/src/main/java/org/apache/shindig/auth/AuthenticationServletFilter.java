@@ -22,6 +22,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.servlet.InjectedFilter;

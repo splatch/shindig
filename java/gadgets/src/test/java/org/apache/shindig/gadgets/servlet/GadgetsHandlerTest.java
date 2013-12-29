@@ -18,10 +18,8 @@
  */
 package org.apache.shindig.gadgets.servlet;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.isA;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.StringReader;
 import java.util.Collections;
@@ -31,12 +29,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.auth.SecurityTokenCodec;
-import org.apache.shindig.auth.SecurityTokenException;
-import org.apache.shindig.common.EasyMockTestCase;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.auth.SecurityTokenException;
+import org.apache.shindig.api.time.TimeSource;
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.JsonAssert;
-import org.apache.shindig.common.testing.FakeGadgetToken;
 import org.apache.shindig.common.testing.ImmediateExecutorService;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.util.FakeTimeSource;
@@ -70,13 +68,17 @@ import org.apache.shindig.protocol.RpcHandler;
 import org.apache.shindig.protocol.conversion.BeanFilter;
 import org.apache.shindig.protocol.conversion.BeanJsonConverter;
 import org.apache.shindig.protocol.multipart.FormDataItem;
-import org.easymock.Capture;
-import org.easymock.EasyMock;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.caja.lexer.CharProducer;
 import com.google.caja.lexer.InputSource;
@@ -87,10 +89,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class GadgetsHandlerTest extends EasyMockTestCase {
+@RunWith(MockitoJUnitRunner.class)
+public class GadgetsHandlerTest extends JsonAssert {
   private static final String GADGET1_URL = FakeProcessor.SPEC_URL.toString();
   private static final String GADGET2_URL = FakeProcessor.SPEC_URL2.toString();
   private static final Uri HTML_URL = Uri.parse("http://www.example.com/a.html");
@@ -102,7 +104,7 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
   private static final String RPC_SERVICE_2 = "rpc_service_2";
   private static final String RPC_SERVICE_3 = "rpc_service_3";
 
-  private final FakeTimeSource timeSource = new FakeTimeSource();
+  private final TimeSource timeSource = new FakeTimeSource();
   private final FeatureRegistry mockRegistry = mock(FeatureRegistry.class);
   private final FakeProcessor processor = new FakeProcessor(mockRegistry);
   private final FakeIframeUriManager urlGenerator = new FakeIframeUriManager();
@@ -119,14 +121,21 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
   private Injector injector;
   private BeanJsonConverter converter;
   private HandlerRegistry registry;
-  private FakeGadgetToken authContext;
+
+  @Mock
+  private SecurityToken authContext;
   private FeatureRegistryProvider featureRegistryProvider;
+
+  @Captor
+  private ArgumentCaptor<List<ProxyUri>> captureProxyUri;
+
+  public GadgetsHandlerTest() {
+    super(new DefaultJsonSerializer());
+  }
 
   @Before
   public void setUp() throws Exception {
-    injector = Guice.createInjector();
-    converter = new BeanJsonConverter(injector);
-    authContext = new FakeGadgetToken();
+    converter = new BeanJsonConverter();
     featureRegistryProvider = new FeatureRegistryProvider() {
       public FeatureRegistry get(String repository) throws GadgetException {
         return mockRegistry;
@@ -183,36 +192,32 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
 
   @SuppressWarnings("unchecked")
   private void setupMockRegistry(List<String> features) {
-    EasyMock.expect(mockRegistry.getFeatures(EasyMock.isA(List.class)))
-            .andReturn(Lists.newArrayList(features)).anyTimes();
-    FeatureBundle featureBundle = createMockFeatureBundle();
-    FeatureRegistry.LookupResult lr = createMockLookupResult(ImmutableList.of(featureBundle));
-    EasyMock.expect(
-            mockRegistry.getFeatureResources(isA(GadgetContext.class),
-                    eq(Lists.newArrayList(features)), EasyMock.<List<String>> isNull()))
-            .andReturn(lr).anyTimes();
-    replay();
+    when(mockRegistry.getFeatures(any(List.class)))
+            .thenReturn(Lists.newArrayList(features));
+    FeatureBundle featureBundle = mockFeatureBundle();
+    FeatureRegistry.LookupResult lr = mockLookupResult(ImmutableList.of(featureBundle));
+
+    when(mockRegistry.getFeatureResources(isA(GadgetContext.class), eq(features), anyListOf(String.class)))
+      .thenReturn(lr);
   }
 
   private void setupGadgetAdminStore() {
-    EasyMock.expect(gadgetAdminStore.checkFeatureAdminInfo(isA(Gadget.class)))
-    .andReturn(true).anyTimes();
-    EasyMock.expect(gadgetAdminStore.getAdditionalRpcServiceIds(isA(Gadget.class)))
-    .andReturn((Sets.newHashSet(RPC_SERVICE_3))).anyTimes();
+    when(gadgetAdminStore.checkFeatureAdminInfo(isA(Gadget.class)))
+    .thenReturn(true);
+    when(gadgetAdminStore.getAdditionalRpcServiceIds(isA(Gadget.class)))
+    .thenReturn((Sets.newHashSet(RPC_SERVICE_3)));
   }
 
-  private FeatureBundle createMockFeatureBundle() {
-    FeatureBundle result = createMock(FeatureBundle.class);
-    expect(result.getApis(ApiDirective.Type.RPC, false)).andReturn(
-            Lists.newArrayList(RPC_SERVICE_1, RPC_SERVICE_2)).anyTimes();
-    replay(result);
+  private FeatureBundle mockFeatureBundle() {
+    FeatureBundle result = mock(FeatureBundle.class);
+    when(result.getApis(ApiDirective.Type.RPC, false)).thenReturn(
+            Lists.newArrayList(RPC_SERVICE_1, RPC_SERVICE_2));
     return result;
   }
 
-  private FeatureRegistry.LookupResult createMockLookupResult(List<FeatureBundle> featureBundles) {
-    FeatureRegistry.LookupResult result = createMock(FeatureRegistry.LookupResult.class);
-    EasyMock.expect(result.getBundles()).andReturn(featureBundles).anyTimes();
-    replay(result);
+  private FeatureRegistry.LookupResult mockLookupResult(List<FeatureBundle> featureBundles) {
+    FeatureRegistry.LookupResult result = mock(FeatureRegistry.LookupResult.class);
+    when(result.getBundles()).thenReturn(featureBundles);
     return result;
   }
 
@@ -222,7 +227,7 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     JSONObject request = makeMetadataRequest(null, null, null);
     RpcHandler operation = registry.getRpcHandler(request);
     Object empty = operation.execute(emptyFormItems, authContext, converter).get();
-    JsonAssert.assertJsonEquals("{}", converter.convertToString(empty));
+    assertJsonEquals("{}", converter.convertToString(empty));
   }
 
   @Test
@@ -255,7 +260,7 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     JSONObject request = makeCajaRequest(null);
     RpcHandler operation = registry.getRpcHandler(request);
     Object empty = operation.execute(emptyFormItems, authContext, converter).get();
-    JsonAssert.assertJsonEquals("{}", converter.convertToString(empty));
+    assertJsonEquals("{}", converter.convertToString(empty));
   }
 
   private CajoledResult cajole(Uri uri, String mime, String content) throws ParseException {
@@ -269,19 +274,18 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
   @Test
   public void testCajaJsRequest() throws Exception {
     registerGadgetsHandler(null);
-    Capture<Uri> uriCapture = new Capture<Uri>();
-    Capture<String> containerCapture = new Capture<String>();
-    Capture<String> mimeCapture = new Capture<String>();
+
+    ArgumentCaptor<Uri> uriCapture = ArgumentCaptor.forClass(Uri.class);
+    ArgumentCaptor<String> containerCapture = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> mimeCapture = ArgumentCaptor.forClass(String.class);
 
     String goldenMime = "text/javascript";
 
     CajoledResult golden = cajole(JS_URL, goldenMime, "alert('hi');");
 
-    EasyMock.expect(
-            cajaContentRewriter.rewrite(EasyMock.capture(uriCapture),
-                    EasyMock.capture(containerCapture), EasyMock.capture(mimeCapture),
-                    EasyMock.eq(true), EasyMock.anyBoolean())).andReturn(golden).anyTimes();
-    replay();
+    when(cajaContentRewriter.rewrite(uriCapture.capture(),
+                    containerCapture.capture(), mimeCapture.capture(),
+                    eq(true), anyBoolean())).thenReturn(golden);
 
     JSONObject request = makeCajaRequest(goldenMime, JS_URL.toString());
     RpcHandler operation = registry.getRpcHandler(request);
@@ -306,20 +310,18 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
   @Test
   public void testCajaHtmlRequest() throws Exception {
     registerGadgetsHandler(null);
-    Capture<Uri> uriCapture = new Capture<Uri>();
-    Capture<String> containerCapture = new Capture<String>();
-    Capture<String> mimeCapture = new Capture<String>();
+    ArgumentCaptor<Uri> uriCapture = ArgumentCaptor.forClass(Uri.class);
+    ArgumentCaptor<String> containerCapture = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> mimeCapture = ArgumentCaptor.forClass(String.class);
 
     String goldenMime = "text/html";
 
     CajoledResult golden = cajole(HTML_URL, goldenMime,
             "<b>hello</b>world<script>evilFunc1()</script><div onclick='evilFunc2'></div>");
 
-    EasyMock.expect(
-            cajaContentRewriter.rewrite(EasyMock.capture(uriCapture),
-                    EasyMock.capture(containerCapture), EasyMock.capture(mimeCapture),
-                    EasyMock.eq(true), EasyMock.anyBoolean())).andReturn(golden).anyTimes();
-    replay();
+    when(cajaContentRewriter.rewrite(uriCapture.capture(),
+                    containerCapture.capture(), mimeCapture.capture(),
+                    eq(true), anyBoolean())).thenReturn(golden);
 
     JSONObject request = makeCajaRequest(goldenMime, HTML_URL.toString());
     RpcHandler operation = registry.getRpcHandler(request);
@@ -350,7 +352,7 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     JSONObject request = makeCajaRequest(null);
     RpcHandler operation = registry.getRpcHandler(request);
     Object empty = operation.execute(emptyFormItems, authContext, converter).get();
-    JsonAssert.assertJsonEquals("{}", converter.convertToString(empty));
+    assertJsonEquals("{}", converter.convertToString(empty));
   }
 
   @Test
@@ -374,7 +376,7 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     JSONObject request = makeTokenRequest();
     RpcHandler operation = registry.getRpcHandler(request);
     Object empty = operation.execute(emptyFormItems, authContext, converter).get();
-    JsonAssert.assertJsonEquals("{}", converter.convertToString(empty));
+    assertJsonEquals("{}", converter.convertToString(empty));
   }
 
   @Test
@@ -443,15 +445,12 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     assertEquals("z_xabc", orderedEnums.getJSONObject(2).getString("value"));
     assertEquals("disp4", orderedEnums.getJSONObject(3).getString("displayValue"));
     assertEquals("foo", orderedEnums.getJSONObject(3).getString("value"));
-
-    verify();
   }
 
   @Test
   public void testMetadataOneGadgetRequestTokenTTLParam() throws Exception {
-    SecurityTokenCodec codec = createMock(SecurityTokenCodec.class);
-    expect(codec.getTokenTimeToLive(CONTAINER)).andReturn(42).anyTimes();
-    replay(codec);
+    SecurityTokenCodec codec = mock(SecurityTokenCodec.class);
+    when(codec.getTokenTimeToLive(CONTAINER)).thenReturn(42);
 
     registerGadgetsHandler(codec);
     setupGadgetAdminStore();
@@ -496,17 +495,13 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     result &= rpcServiceIds.get(1).equals(RPC_SERVICE_2) || rpcServiceIds.get(1).equals(RPC_SERVICE_1) || rpcServiceIds.get(1).equals(RPC_SERVICE_3);
     result &= rpcServiceIds.get(2).equals(RPC_SERVICE_2) || rpcServiceIds.get(2).equals(RPC_SERVICE_1) || rpcServiceIds.get(2).equals(RPC_SERVICE_3);
     assertTrue(result);
-
-    verify();
   }
 
   @Test
   public void testTokenOneGadget() throws Exception {
-    SecurityTokenCodec codec = EasyMock.createMock(SecurityTokenCodec.class);
-    Capture<SecurityToken> authContextCapture = new Capture<SecurityToken>();
-    EasyMock.expect(codec.encodeToken(EasyMock.capture(authContextCapture))).andReturn(TOKEN)
-            .anyTimes();
-    replay(codec);
+    SecurityTokenCodec codec = mock(SecurityTokenCodec.class);
+    ArgumentCaptor<SecurityToken> captor = ArgumentCaptor.forClass(SecurityToken.class);
+    when(codec.encodeToken(captor.capture())).thenReturn(TOKEN);
 
     registerGadgetsHandler(codec);
     JSONObject request = makeTokenRequest(GADGET1_URL);
@@ -519,18 +514,18 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     assertFalse(gadget.has("error"));
     assertFalse(gadget.has("url")); // filtered out
     // next checks verify all fiels that canbe used for token generation are passed in
-    assertEquals("container", authContextCapture.getValue().getContainer());
-    assertEquals(GADGET1_URL, authContextCapture.getValue().getAppId());
-    assertEquals(GADGET1_URL, authContextCapture.getValue().getAppUrl());
-    assertSame(authContext.getOwnerId(), authContextCapture.getValue().getOwnerId());
-    assertSame(authContext.getViewerId(), authContextCapture.getValue().getViewerId());
+    SecurityToken securityToken = captor.getValue();
+    assertEquals("container", securityToken.getContainer());
+    assertEquals(GADGET1_URL, securityToken.getAppId());
+    assertEquals(GADGET1_URL, securityToken.getAppUrl());
+    assertSame(authContext.getOwnerId(), securityToken.getOwnerId());
+    assertSame(authContext.getViewerId(), securityToken.getViewerId());
   }
 
   @Test
   public void testMetadataOneGadgetFailure() throws Exception {
     registerGadgetsHandler(null);
     setupGadgetAdminStore();
-    replay();
 
     JSONObject request = makeMetadataRequest(null, null, null, GADGET1_URL);
     urlGenerator.throwRandomFault = true;
@@ -546,10 +541,9 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
 
   @Test
   public void testTokenOneGadgetFailure() throws Exception {
-    SecurityTokenCodec codec = EasyMock.createMock(SecurityTokenCodec.class);
-    EasyMock.expect(codec.encodeToken(EasyMock.isA(SecurityToken.class))).andThrow(
+    SecurityTokenCodec codec = mock(SecurityTokenCodec.class);
+    when(codec.encodeToken(isA(SecurityToken.class))).thenThrow(
             new SecurityTokenException("blah"));
-    replay(codec);
 
     registerGadgetsHandler(codec);
     JSONObject request = makeTokenRequest(GADGET1_URL);
@@ -578,16 +572,13 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
 
     JSONObject modulePrefs2 = response.getJSONObject(GADGET2_URL).getJSONObject("modulePrefs");
     assertEquals(FakeProcessor.SPEC_TITLE2, modulePrefs2.getString("title"));
-    verify();
   }
 
   @Test
   public void testTokenMultipleGadgetsWithSuccessAndFailure() throws Exception {
-    SecurityTokenCodec codec = EasyMock.createMock(SecurityTokenCodec.class);
-    EasyMock.expect(codec.encodeToken(EasyMock.isA(SecurityToken.class))).andReturn(TOKEN);
-    EasyMock.expect(codec.encodeToken(EasyMock.isA(SecurityToken.class))).andThrow(
-            new SecurityTokenException("blah"));
-    replay(codec);
+    SecurityTokenCodec codec = mock(SecurityTokenCodec.class);
+    when(codec.encodeToken(authContext)).thenReturn(TOKEN);
+    when(codec.encodeToken(authContext)).thenThrow(new SecurityTokenException("blah"));
 
     registerGadgetsHandler(codec);
     JSONObject request = makeTokenRequest(GADGET1_URL, GADGET2_URL);
@@ -626,7 +617,6 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     assertEquals("broken", // Processing exception message is used
             gadget2.getJSONObject("error").getString("message"));
     assertEquals(HttpServletResponse.SC_BAD_REQUEST, gadget2.getJSONObject("error").getInt("code"));
-    verify();
   }
 
   private JSONObject makeSimpleProxyRequest(String fields, String... uris) throws JSONException {
@@ -646,11 +636,10 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     String resUri = "http://example.com/data";
     String proxyUri = "http://shindig.com/gadgets/proxy?url=" + resUri;
     JSONObject request = makeSimpleProxyRequest(null, resUri);
-    Capture<List<ProxyUri>> captureProxyUri = new Capture<List<ProxyUri>>();
-    EasyMock.expect(
-            proxyUriManager.make(EasyMock.capture(captureProxyUri), EasyMock.isNull(Integer.class)))
-            .andReturn(ImmutableList.<Uri> of(Uri.parse(proxyUri)));
-    replay();
+
+    when(proxyUriManager.make(captureProxyUri.capture(), isNull(Integer.class)))
+            .thenReturn(ImmutableList.<Uri> of(Uri.parse(proxyUri)));
+
     RpcHandler operation = registry.getRpcHandler(request);
     Object responseObj = operation.execute(emptyFormItems, authContext, converter).get();
     JSONObject response = new JSONObject(converter.convertToString(responseObj));
@@ -661,7 +650,6 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     ProxyUri expectedUri = new ProxyUri(null, false, false, CONTAINER, null, Uri.parse(resUri));
     assertTrue(expectedUri.equals(pUri));
     assertFalse(gadget1.has("error"));
-    verify();
   }
 
   private JSONObject makeSimpleJsRequest(String fields, List<String> features) throws JSONException {
@@ -681,9 +669,8 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     List<String> features = ImmutableList.of("rpc", "io");
     Uri jsUri = Uri.parse("http://shindig.com/gadgets/js/rpc:io");
     JSONObject request = makeSimpleJsRequest(null, features);
-    Capture<JsUri> captureUri = new Capture<JsUri>();
-    EasyMock.expect(jsUriManager.makeExternJsUri(EasyMock.capture(captureUri))).andReturn(jsUri);
-    replay();
+    ArgumentCaptor<JsUri> captureUri = ArgumentCaptor.forClass(JsUri.class);
+    when(jsUriManager.makeExternJsUri(captureUri.capture())).thenReturn(jsUri);
 
     RpcHandler operation = registry.getRpcHandler(request);
     Object responseObj = operation.execute(emptyFormItems, authContext, converter).get();
@@ -694,7 +681,6 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     assertEquals(expectedUri, captureUri.getValue());
     assertFalse(results.has("error"));
     assertFalse(results.has("jsContent"));
-    verify();
   }
 
   private JSONObject makeComplexJsRequest(List<String> features, List<String> loadedFeatures,
@@ -722,12 +708,11 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
 
     JSONObject request = makeComplexJsRequest(features, loadedFeatures, onload, repository);
 
-    Capture<JsUri> captureUri = new Capture<JsUri>();
-    EasyMock.expect(jsUriManager.makeExternJsUri(EasyMock.capture(captureUri))).andReturn(jsUri);
+    ArgumentCaptor<JsUri> captureUri = ArgumentCaptor.forClass(JsUri.class);
+    when(jsUriManager.makeExternJsUri(captureUri.capture())).thenReturn(jsUri);
     String jsContent = "var b=\"123\";";
-    EasyMock.expect(jsPipeline.execute(EasyMock.isA(JsRequest.class))).andReturn(
+    when(jsPipeline.execute(isA(JsRequest.class))).thenReturn(
             new JsResponseBuilder().appendJs(jsContent, "js").build());
-    replay();
 
     RpcHandler operation = registry.getRpcHandler(request);
     Object responseObj = operation.execute(emptyFormItems, authContext, converter).get();
@@ -738,7 +723,6 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     assertEquals(expectedUri, captureUri.getValue());
     assertFalse(results.has("error"));
     assertEquals(jsContent, results.getString("jsContent"));
-    verify();
   }
 
   @Test
@@ -751,11 +735,10 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
 
     JSONObject request = makeComplexJsRequest(features, loadedFeatures, onload, null);
 
-    Capture<JsUri> captureUri = new Capture<JsUri>();
-    EasyMock.expect(jsUriManager.makeExternJsUri(EasyMock.capture(captureUri))).andReturn(jsUri);
-    EasyMock.expect(jsPipeline.execute(EasyMock.isA(JsRequest.class))).andThrow(
+    ArgumentCaptor<JsUri> captureUri = ArgumentCaptor.forClass(JsUri.class);
+    when(jsUriManager.makeExternJsUri(captureUri.capture())).thenReturn(jsUri);
+    when(jsPipeline.execute(isA(JsRequest.class))).thenThrow(
             new JsException(404, "not found"));
-    replay();
 
     RpcHandler operation = registry.getRpcHandler(request);
     Object responseObj = operation.execute(emptyFormItems, authContext, converter).get();
@@ -763,7 +746,6 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     assertFalse(results.has("jsUrl"));
     assertEquals(HttpResponse.SC_NOT_FOUND, results.getJSONObject("error").getInt("code"));
     assertTrue(results.getJSONObject("error").getString("message").contains("not found"));
-    verify();
   }
 
   @Test
@@ -772,14 +754,12 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     String resUri = "http://example.com/data";
     String proxyUri = "http://shindig.com/gadgets/proxy?url=" + resUri;
     JSONObject request = makeSimpleProxyRequest("*", resUri);
-    Capture<List<ProxyUri>> captureProxyUri = new Capture<List<ProxyUri>>();
-    EasyMock.expect(
-            proxyUriManager.make(EasyMock.capture(captureProxyUri), EasyMock.isNull(Integer.class)))
-            .andReturn(ImmutableList.<Uri> of(Uri.parse(proxyUri)));
+
+    when(proxyUriManager.make(captureProxyUri.capture(), isNull(Integer.class)))
+            .thenReturn(ImmutableList.<Uri> of(Uri.parse(proxyUri)));
     String responseData = "response data";
     HttpResponse httpResponse = new HttpResponse(responseData);
-    EasyMock.expect(proxyHandler.fetch(EasyMock.isA(ProxyUri.class))).andReturn(httpResponse);
-    replay();
+    when(proxyHandler.fetch(isA(ProxyUri.class))).thenReturn(httpResponse);
 
     RpcHandler operation = registry.getRpcHandler(request);
     Object responseObj = operation.execute(emptyFormItems, authContext, converter).get();
@@ -795,7 +775,6 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
             new String(Base64.decodeBase64(((JSONObject) gadget1.get("proxyContent")).getString(
                     "contentBase64").getBytes())));
     assertFalse(gadget1.has("error"));
-    verify();
   }
 
   private JSONObject makeComplexProxyRequest(String... uris) throws JSONException {
@@ -818,11 +797,10 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     String resUri = "http://example.com/data";
     String proxyUri = "http://shindig.com/gadgets/proxy?url=" + resUri;
     JSONObject request = makeComplexProxyRequest(resUri);
-    Capture<List<ProxyUri>> captureProxyUri = new Capture<List<ProxyUri>>();
-    EasyMock.expect(
-            proxyUriManager.make(EasyMock.capture(captureProxyUri), EasyMock.isNull(Integer.class)))
-            .andReturn(ImmutableList.<Uri> of(Uri.parse(proxyUri)));
-    replay();
+
+    when(proxyUriManager.make(captureProxyUri.capture(), isNull(Integer.class)))
+            .thenReturn(ImmutableList.<Uri> of(Uri.parse(proxyUri)));
+
     RpcHandler operation = registry.getRpcHandler(request);
     Object responseObj = operation.execute(emptyFormItems, authContext, converter).get();
     JSONObject response = new JSONObject(converter.convertToString(responseObj));
@@ -835,6 +813,5 @@ public class GadgetsHandlerTest extends EasyMockTestCase {
     expectedUri.setFallbackUrl(resUri).setResize(555, 444, 88, true);
     assertTrue(expectedUri.equals(pUri));
     assertFalse(gadget1.has("error"));
-    verify();
   }
 }

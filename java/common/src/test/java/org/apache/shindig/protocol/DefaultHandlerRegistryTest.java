@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.inject.Guice;
 
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -49,7 +48,7 @@ public class DefaultHandlerRegistryTest extends Assert {
 
   @Before
   public void setUp() throws Exception {
-    converter = new BeanJsonConverter(Guice.createInjector());
+    converter = new BeanJsonConverter();
     registry = new DefaultHandlerRegistry(null, converter,
         new HandlerExecutionListener.NoOpHandler());
     registry.addHandlers(Sets.<Object>newHashSet(new TestHandler()));

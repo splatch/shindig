@@ -58,38 +58,6 @@
     </osgi.export>
   </properties>
 
-  <build>
-    <resources>
-      <resource>
-        <directory>conf</directory>
-      </resource>
-      <resource>
-        <directory>${basedir}/../../content/sampledata/</directory>
-        <targetPath>sampledata</targetPath>
-        <includes>
-          <include>**/*.*</include>
-        </includes>
-      </resource>
-    </resources>
-  </build>
-
-  <profiles>
-    <profile>
-      <id>reporting</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>clirr-maven-plugin</artifactId>
-            <configuration>
-              <comparisonVersion>${shindig.api.previous}</comparisonVersion>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
-    </profile>
-  </profiles>
-
   <dependencies>
     <!-- project dependencies -->
     <dependency>
@@ -97,14 +65,11 @@
       <artifactId>shindig-common</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.shindig</groupId>
-      <artifactId>shindig-common</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-
     <!-- external depenencies -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
@@ -184,6 +149,18 @@
       <groupId>org.apache.tomcat</groupId>
       <artifactId>el-api</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.shindig</groupId>
+      <artifactId>shindig-test</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xmlunit</groupId>
+      <artifactId>xmlunit</artifactId>
     </dependency>
   </dependencies>
 </project>

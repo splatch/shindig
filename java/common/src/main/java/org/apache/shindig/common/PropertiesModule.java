@@ -20,11 +20,13 @@ package org.apache.shindig.common;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.CreationException;
+import com.google.inject.Inject;
 import com.google.inject.name.Names;
 import com.google.inject.spi.Message;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.shindig.common.util.ResourceLoader;
+import org.apache.shindig.api.io.ResourceLoader;
+import org.apache.shindig.common.util.DefaultResourceLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,12 +44,12 @@ public class PropertiesModule extends AbstractModule {
   private final Properties properties;
 
   public PropertiesModule() {
-    super();
-    this.properties = readPropertyFile(getDefaultPropertiesPath());
+    this(new DefaultResourceLoader(), getDefaultPropertiesPath());
   }
 
-  public PropertiesModule(String propertyFile) {
-    this.properties = readPropertyFile(propertyFile);
+  @Inject
+  public PropertiesModule(ResourceLoader loader, String propertyFile) {
+    this(readPropertyFile(loader, propertyFile));
   }
 
   public PropertiesModule(Properties properties) {
@@ -68,7 +70,7 @@ public class PropertiesModule extends AbstractModule {
    * If not set uses fixed value of "".
    * @return an context path as a string.
    */
-  protected String getContextRoot() {
+  protected static String getContextRoot() {
     return System.getProperty("shindig.contextroot") != null ? System.getProperty("shindig.contextroot") : "";
   }
 
@@ -76,7 +78,7 @@ public class PropertiesModule extends AbstractModule {
    * Should return the default port set as system property. Return empty string if it's not set.
    * @return an integer port number as a string.
    */
-  protected String getServerPort() {
+  protected static String getServerPort() {
     return System.getProperty("shindig.port") != null ? System.getProperty("shindig.port") : "";
   }
 
@@ -84,7 +86,7 @@ public class PropertiesModule extends AbstractModule {
    * Should return the hostname set as system property. Return empty string  if its' not set.
    * @return a hostname
    */
-  protected String getServerHostname() {
+  protected static String getServerHostname() {
     return System.getProperty("shindig.host") != null ? System.getProperty("shindig.host") : "";
   }
 
@@ -96,12 +98,12 @@ public class PropertiesModule extends AbstractModule {
     return properties;
   }
 
-  protected Properties readPropertyFile(String propertyFile) {
+  protected static Properties readPropertyFile(ResourceLoader loader, String propertyFile) {
     Properties properties = new Properties();
     InputStream is = null;
     String contextRoot = getContextRoot();
     try {
-      is = ResourceLoader.openResource(propertyFile);
+      is = loader.openResource(propertyFile);
       properties.load(is);
 
       for (Object key : properties.keySet()) {

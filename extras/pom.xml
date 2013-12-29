@@ -146,16 +146,7 @@
     <!-- test -->
     <dependency>
       <groupId>org.apache.shindig</groupId>
-      <artifactId>shindig-common</artifactId>
-      <version>${project.parent.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shindig</groupId>
-      <artifactId>shindig-social-api</artifactId>
-      <version>${project.parent.version}</version>
-      <classifier>tests</classifier>
+      <artifactId>shindig-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

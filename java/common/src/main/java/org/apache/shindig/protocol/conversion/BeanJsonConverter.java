@@ -33,11 +33,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.shindig.api.json.JsonSerializer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.JsonProperty;
-import org.apache.shindig.common.JsonSerializer;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.protocol.ContentTypes;
 import org.apache.shindig.protocol.model.Enum;
@@ -53,7 +55,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 /**
  * Converts between JSON and java objects.
@@ -80,11 +81,14 @@ public class BeanJsonConverter implements BeanConverter {
         }
       });
 
-  private final Injector injector;
+  private final JsonSerializer serializer;
 
-  @Inject
-  public BeanJsonConverter(Injector injector) {
-    this.injector = injector;
+  public BeanJsonConverter() {
+    this(new DefaultJsonSerializer());
+  }
+
+  public BeanJsonConverter(JsonSerializer serializer) {
+    this.serializer = serializer;
   }
 
   public String getContentType() {
@@ -98,11 +102,11 @@ public class BeanJsonConverter implements BeanConverter {
    * @return An object whose toString method will return json
    */
   public String convertToString(final Object pojo) {
-    return JsonSerializer.serialize(pojo);
+    return serializer.serialize(pojo);
   }
 
   public void append(Appendable buf, Object pojo) throws IOException {
-    JsonSerializer.append(buf, pojo);
+    serializer.append(buf, pojo);
   }
 
   @VisibleForTesting
@@ -258,7 +262,7 @@ public class BeanJsonConverter implements BeanConverter {
   }
 
   private Object convertToClass(JSONObject in, Class<?> type) {
-    Object out = injector.getInstance(type);
+    Object out = create(type);
 
     /*
      * Simple hack to add support for arbitrary extensions to Shindig's data
@@ -291,5 +295,15 @@ public class BeanJsonConverter implements BeanConverter {
       }
     }
     return out;
+  }
+
+  protected Object create(Class<?> type) {
+    try {
+      return type.newInstance();
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

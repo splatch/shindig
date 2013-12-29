@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import com.google.inject.ImplementedBy;
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RestfulCollection;
 import org.apache.shindig.social.opensocial.model.Album;

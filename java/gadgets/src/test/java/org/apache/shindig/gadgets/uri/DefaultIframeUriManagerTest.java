@@ -39,8 +39,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.shindig.api.auth.SecurityTokenCodec;
 import org.apache.shindig.auth.BasicSecurityTokenCodec;
-import org.apache.shindig.auth.SecurityTokenCodec;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.uri.UriBuilder;
 import org.apache.shindig.config.BasicContainerConfig;

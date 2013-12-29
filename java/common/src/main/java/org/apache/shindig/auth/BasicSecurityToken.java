@@ -20,6 +20,9 @@ package org.apache.shindig.auth;
 
 import java.util.EnumSet;
 
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
+
 /**
  * Primitive token implementation that uses strings as tokens.
  */
@@ -42,6 +45,11 @@ public class BasicSecurityToken extends AbstractSecurityToken {
 
   public String getAuthenticationMode() {
     return AuthenticationMode.SECURITY_TOKEN_URL_PARAMETER.name();
+  }
+
+  @Override
+  public SecurityToken setAuthenticationMode(AuthenticationMode mode) {
+    throw new UnsupportedOperationException();
   }
 
   public boolean isAnonymous() {

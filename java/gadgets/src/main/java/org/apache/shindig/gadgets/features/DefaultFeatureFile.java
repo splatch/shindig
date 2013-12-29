@@ -18,13 +18,13 @@
  */
 package org.apache.shindig.gadgets.features;
 
-import org.apache.shindig.common.util.ResourceLoader;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+
+import org.apache.shindig.api.io.ResourceLoader;
 
 /**
  * DefaultFile delegate feature file interface to java.io.File object
@@ -32,17 +32,19 @@ import java.net.URI;
 public class DefaultFeatureFile implements FeatureFile {
 
   protected final File wrappedFile;
+  private final ResourceLoader resourceLoader;
 
-  public DefaultFeatureFile(String path) {
-    this.wrappedFile = new File(path);
+  public DefaultFeatureFile(String path, ResourceLoader resourceLoader) {
+    this(new File(path), resourceLoader);
   }
 
-  protected DefaultFeatureFile(File wrappedFile) {
+  protected DefaultFeatureFile(File wrappedFile, ResourceLoader resourceLoader) {
     this.wrappedFile = wrappedFile;
+    this.resourceLoader = resourceLoader;
   }
 
   protected DefaultFeatureFile createFile(File wrappedFile) {
-    return new DefaultFeatureFile(wrappedFile);
+    return new DefaultFeatureFile(wrappedFile, resourceLoader);
   }
 
   public InputStream getInputStream() throws IOException {
@@ -90,7 +92,7 @@ public class DefaultFeatureFile implements FeatureFile {
   }
 
   public String getContent() throws IOException {
-    return ResourceLoader.getContent(wrappedFile);
+    return resourceLoader.getContent(wrappedFile.getAbsolutePath());
   }
 
   public long lastModified() {

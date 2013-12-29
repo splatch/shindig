@@ -20,7 +20,7 @@ package org.apache.shindig.gadgets.oauth;
 
 import com.google.common.collect.Lists;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.Pair;
 import org.apache.shindig.common.crypto.BlobCrypter;
 import org.apache.shindig.common.crypto.BlobCrypterException;

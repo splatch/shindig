@@ -29,8 +29,8 @@ import java.util.logging.Logger;
 import javax.el.ELContext;
 import javax.el.PropertyNotFoundException;
 
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shindig.common.JsonSerializer;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.uri.UriBuilder;
@@ -124,6 +124,7 @@ public class RenderingGadgetRewriter implements GadgetRewriter {
   protected final JsUriManager jsUriManager;
   protected final ConfigProcessor configProcessor;
   protected final GadgetAdminStore gadgetAdminStore;
+  protected final JsonSerializer serializer;
 
   protected Set<String> defaultExternLibs = ImmutableSet.of();
 
@@ -147,7 +148,8 @@ public class RenderingGadgetRewriter implements GadgetRewriter {
                                  JsServingPipeline jsServingPipeline,
                                  JsUriManager jsUriManager,
                                  ConfigProcessor configProcessor,
-                                 GadgetAdminStore gadgetAdminStore) {
+                                 GadgetAdminStore gadgetAdminStore,
+                                 JsonSerializer serializer) {
     this.messageBundleFactory = messageBundleFactory;
     this.expressions = expressions;
     this.containerConfig = containerConfig;
@@ -156,6 +158,7 @@ public class RenderingGadgetRewriter implements GadgetRewriter {
     this.jsUriManager = jsUriManager;
     this.configProcessor = configProcessor;
     this.gadgetAdminStore = gadgetAdminStore;
+    this.serializer = serializer;
   }
 
   public void setDefaultDoctypeQName(String qname) {
@@ -511,7 +514,7 @@ public class RenderingGadgetRewriter implements GadgetRewriter {
         configProcessor.getConfig(gadget.getContext().getContainer(), reqs, null, gadget);
 
     if (!config.isEmpty()) {
-      return "gadgets.config.init(" + JsonSerializer.serialize(config) + ");\n";
+      return "gadgets.config.init(" + serializer.serialize(config) + ");\n";
     }
 
     return "";
@@ -540,7 +543,7 @@ public class RenderingGadgetRewriter implements GadgetRewriter {
       defaultPrefs.put(up.getName(), up.getDefaultValue());
     }
     Text text = scriptTag.getOwnerDocument().createTextNode("gadgets.Prefs.setDefaultPrefs_(");
-    text.appendData(JsonSerializer.serialize(defaultPrefs));
+    text.appendData(serializer.serialize(defaultPrefs));
     text.appendData(");");
     scriptTag.appendChild(text);
   }
@@ -564,7 +567,7 @@ public class RenderingGadgetRewriter implements GadgetRewriter {
       }
     }
     Text text = scriptTag.getOwnerDocument().createTextNode("gadgets.io.preloaded_=");
-    text.appendData(JsonSerializer.serialize(preload));
+    text.appendData(serializer.serialize(preload));
     text.appendData(";");
     scriptTag.appendChild(text);
   }

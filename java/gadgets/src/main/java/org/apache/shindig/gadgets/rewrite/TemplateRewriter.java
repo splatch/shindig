@@ -27,7 +27,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.DomUtil;
@@ -103,18 +103,21 @@ public class TemplateRewriter implements GadgetRewriter {
   private final TagRegistry baseTagRegistry;
   private final TemplateLibraryFactory libraryFactory;
   private final ContainerTagLibraryFactory containerTagLibraryFactory;
+  private final JsonSerializer serializer;
 
   @Inject
   public TemplateRewriter(Provider<TemplateProcessor> processor,
       MessageBundleFactory messageBundleFactory, Expressions expressions,
       TagRegistry baseTagRegistry, TemplateLibraryFactory libraryFactory,
-      ContainerTagLibraryFactory containerTagLibraryFactory) {
+      ContainerTagLibraryFactory containerTagLibraryFactory,
+      JsonSerializer serializer) {
     this.processor = processor;
     this.messageBundleFactory = messageBundleFactory;
     this.expressions = expressions;
     this.baseTagRegistry = baseTagRegistry;
     this.libraryFactory = libraryFactory;
     this.containerTagLibraryFactory = containerTagLibraryFactory;
+    this.serializer = serializer;
   }
 
   public void rewrite(Gadget gadget, MutableContent content) throws RewritingException {
@@ -286,9 +289,9 @@ public class TemplateRewriter implements GadgetRewriter {
       scriptElement.setAttribute("type", "text/javascript");
       StringBuilder buffer = new StringBuilder();
       buffer.append("opensocial.template.Loader.loadContent(");
-      JsonSerializer.appendString(buffer, library.serialize());
+      serializer.append(buffer, library.serialize());
       buffer.append(',');
-      JsonSerializer.appendString(buffer, library.getLibraryUri().toString());
+      serializer.append(buffer, library.getLibraryUri().toString());
       buffer.append(");");
       scriptElement.setTextContent(buffer.toString());
       head.appendChild(scriptElement);

@@ -32,8 +32,8 @@ import net.oauth.OAuth.Parameter;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.BasicSecurityToken;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.crypto.BasicBlobCrypter;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.uri.UriBuilder;

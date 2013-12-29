@@ -29,10 +29,10 @@ import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.auth.AnonymousSecurityToken;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.Authority;
-import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.protocol.DataCollection;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RestfulCollection;
@@ -164,14 +164,17 @@ public class JsonDbOpensocialService implements ActivityService, PersonService, 
    *
    * @param jsonLocation location of the json data provided by the shindig.canonical.json.db parameter
    * @param converter an injected BeanConverter
+ * @param resourceLoader 
    * @throws java.lang.Exception if any
    */
   @Inject
   public JsonDbOpensocialService(@Named("shindig.canonical.json.db")
-  String jsonLocation, @Named("shindig.bean.converter.json")
-  BeanConverter converter,
-  @Named("shindig.contextroot") String contextroot) throws Exception {
-    String content = IOUtils.toString(ResourceLoader.openResource(jsonLocation), "UTF-8");
+    String jsonLocation,
+    @Named("shindig.bean.converter.json")
+    BeanConverter converter,
+    @Named("shindig.contextroot") String contextroot,
+    ResourceLoader resourceLoader) throws Exception {
+    String content = IOUtils.toString(resourceLoader.openResource(jsonLocation), "UTF-8");
     this.db = new JSONObject(content.replace("%contextroot%", contextroot));
     this.converter = converter;
   }

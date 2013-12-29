@@ -54,7 +54,6 @@
               </includes>
             </resource>
           </webResources>
-          <classifier>${shindig.jdk.classifier}</classifier>
         </configuration>
       </plugin>
       <plugin>
@@ -74,28 +73,52 @@
   </build>
 
   <dependencies>
-    <!-- war dependencies -->
+    <!-- project dependencies -->
     <dependency>
       <groupId>org.apache.shindig</groupId>
-      <artifactId>shindig-server-dependencies</artifactId>
-      <classifier>${shindig.jdk.classifier}</classifier>
+      <artifactId>shindig-common</artifactId>
       <version>${project.version}</version>
-      <type>pom</type>
     </dependency>
-    <!-- war resources -->
     <dependency>
       <groupId>org.apache.shindig</groupId>
-      <artifactId>shindig-server-resources</artifactId>
-      <classifier>${shindig.jdk.classifier}</classifier>
+      <artifactId>shindig-gadgets</artifactId>
       <version>${project.version}</version>
-      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.shindig</groupId>
+      <artifactId>shindig-social-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.shindig</groupId>
+      <artifactId>shindig-features</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.shindig</groupId>
+      <artifactId>shindig-extras</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.shindig</groupId>
+      <artifactId>shindig-sample-container</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- external dependencies -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jstl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
     </dependency>
 
     <!-- test dependencies -->
     <dependency>
       <groupId>org.apache.shindig</groupId>
-      <artifactId>shindig-common</artifactId>
-      <type>test-jar</type>
+      <artifactId>shindig-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -21,7 +21,8 @@ package org.apache.shindig.common.cache;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.shindig.api.cache.Cache;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.api.time.TimeSource;
+import org.apache.shindig.common.util.DefaultTimeSource;
 
 import com.google.common.collect.MapMaker;
 
@@ -42,7 +43,7 @@ public class SoftExpiringCache<K, V> {
   // We keep a weak reference to the value stored in the cache so that when the value in the actual
   // cache is removed, we should lose it here as well.
   private final ConcurrentMap<V, Long> expirationTimes = new MapMaker().weakKeys().makeMap();
-  private TimeSource timeSource;
+  private TimeSource timeSource = new DefaultTimeSource();
 
   /**
    * Create a new TtlCache with the given capacity and TTL values.
@@ -52,7 +53,6 @@ public class SoftExpiringCache<K, V> {
    */
   public SoftExpiringCache(Cache<K, V>  cache) {
     this.cache = cache;
-    timeSource = new TimeSource();
   }
 
   /**

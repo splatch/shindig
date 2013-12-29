@@ -27,10 +27,11 @@ import static org.junit.Assert.assertNull;
 
 import org.apache.shindig.api.cache.Cache;
 import org.apache.shindig.api.cache.CacheProvider;
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.cache.LruCacheProvider;
 import org.apache.shindig.common.testing.ImmediateExecutorService;
 import org.apache.shindig.common.uri.Uri;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.api.time.TimeSource;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
@@ -146,7 +147,7 @@ public class DefaultMessageBundleFactoryTest {
   private final Cache<String, MessageBundle> cache
       = cacheProvider.createCache(DefaultMessageBundleFactory.CACHE_NAME);
   private final DefaultMessageBundleFactory bundleFactory
-      = new DefaultMessageBundleFactory(new ImmediateExecutorService(), pipeline, cacheProvider, MAX_AGE);
+      = new DefaultMessageBundleFactory(new ImmediateExecutorService(), pipeline, cacheProvider, new DefaultJsonSerializer(), MAX_AGE);
   private final GadgetSpec gadgetSpec;
   private final GadgetSpec externalSpec;
 
@@ -361,7 +362,7 @@ public class DefaultMessageBundleFactoryTest {
     CapturingFetcher capturingFetcher = new CapturingFetcher();
 
     MessageBundleFactory factory = new DefaultMessageBundleFactory(
-        new ImmediateExecutorService(), capturingFetcher, cacheProvider, MAX_AGE);
+        new ImmediateExecutorService(), capturingFetcher, cacheProvider, new DefaultJsonSerializer(), MAX_AGE);
 
     factory.getBundle(gadgetSpec, LOCALE, false, ContainerConfig.DEFAULT_CONTAINER, null);
 

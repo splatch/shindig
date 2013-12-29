@@ -21,6 +21,7 @@ package org.apache.shindig.gadgets.templates;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.xml.XmlUtil;
 import org.apache.shindig.expressions.Expressions;
 import org.apache.shindig.gadgets.spec.MessageBundle;
@@ -49,7 +50,7 @@ public class MessageELResolverTest {
 
   @Before
   public void setUp() throws Exception {
-    messageBundle = new MessageBundle(XmlUtil.parse(MESSAGE_BUNDLE));
+    messageBundle = new MessageBundle(new DefaultJsonSerializer(), XmlUtil.parse(MESSAGE_BUNDLE));
     expressions = Expressions.forTesting();
     context = expressions.newELContext(new MessageELResolver(expressions, messageBundle));
   }

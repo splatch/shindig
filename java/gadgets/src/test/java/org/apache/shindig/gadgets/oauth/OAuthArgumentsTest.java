@@ -18,12 +18,12 @@
  */
 package org.apache.shindig.gadgets.oauth;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-import org.apache.shindig.common.testing.FakeHttpServletRequest;
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlUtil;
 import org.apache.shindig.gadgets.AuthType;
@@ -64,18 +64,21 @@ public class OAuthArgumentsTest {
     assertEquals("stuff", params.getRequestOption("random"));
   }
 
-  private FakeHttpServletRequest makeDummyRequest() throws Exception {
-    FakeHttpServletRequest req = new FakeHttpServletRequest();
-    req.setParameter("OAUTH_USE_TOKEN", true, "never");
-    req.setParameter("OAUTH_SERVICE_NAME", true, "service");
-    req.setParameter("OAUTH_TOKEN_NAME", true, "token");
-    req.setParameter("OAUTH_REQUEST_TOKEN", true, "reqtoken");
-    req.setParameter("OAUTH_REQUEST_TOKEN_SECRET", true, "secret");
-    req.setParameter("oauthState", true, "state");
-    req.setParameter("bypassSpecCache", true, "1");
-    req.setParameter("signOwner", true, "false");
-    req.setParameter("signViewer", true, "false");
-    req.setParameter("random", true, "stuff");
+  private HttpServletRequest makeDummyRequest() throws Exception {
+    HttpServletRequest req = mock(HttpServletRequest.class);
+    when(req.getParameter("OAUTH_USE_TOKEN")).thenReturn("never");
+    when(req.getParameter("OAUTH_SERVICE_NAME")).thenReturn("service");
+    when(req.getParameter("OAUTH_TOKEN_NAME")).thenReturn("token");
+    when(req.getParameter("OAUTH_REQUEST_TOKEN")).thenReturn("reqtoken");
+    when(req.getParameter("OAUTH_REQUEST_TOKEN_SECRET")).thenReturn("secret");
+    when(req.getParameter("oauthState")).thenReturn("state");
+    when(req.getParameter("bypassSpecCache")).thenReturn("1");
+    when(req.getParameter("signOwner")).thenReturn("false");
+    when(req.getParameter("signViewer")).thenReturn("false");
+    when(req.getParameter("random")).thenReturn("stuff");
+    when(req.getParameterNames()).thenReturn(Collections.enumeration(Arrays.asList(
+      "OAUTH_USE_TOKEN","OAUTH_SERVICE_NAME","OAUTH_TOKEN_NAME","OAUTH_REQUEST_TOKEN",
+      "OAUTH_REQUEST_TOKEN_SECRET","oauthState","bypassSpecCache","signOwner","signViewer","random")));
     return req;
   }
 
@@ -90,32 +93,32 @@ public class OAuthArgumentsTest {
     assertEquals("reqtoken", args.getRequestToken());
     assertEquals("secret", args.getRequestTokenSecret());
     assertEquals("state", args.getOrigClientState());
-    Assert.assertTrue(args.getBypassSpecCache());
-    Assert.assertFalse(args.getSignOwner());
-    Assert.assertFalse(args.getSignViewer());
+    assertTrue(args.getBypassSpecCache());
+    assertFalse(args.getSignOwner());
+    assertFalse(args.getSignViewer());
     assertEquals("stuff", args.getRequestOption("random"));
     assertEquals("stuff", args.getRequestOption("rAnDoM"));
   }
 
   @Test
   public void testInitFromRequest_defaults() throws Exception {
-    HttpServletRequest req = new FakeHttpServletRequest();
+    HttpServletRequest req = mock(HttpServletRequest.class);
     OAuthArguments args = new OAuthArguments(AuthType.SIGNED, req);
     assertEquals(UseToken.NEVER, args.getUseToken());
     assertEquals("", args.getServiceName());
     assertEquals("", args.getTokenName());
-    Assert.assertNull(args.getRequestToken());
-    Assert.assertNull(args.getRequestTokenSecret());
-    Assert.assertNull(args.getOrigClientState());
-    Assert.assertFalse(args.getBypassSpecCache());
-    Assert.assertTrue(args.getSignOwner());
-    Assert.assertTrue(args.getSignViewer());
+    assertNull(args.getRequestToken());
+    assertNull(args.getRequestTokenSecret());
+    assertNull(args.getOrigClientState());
+    assertFalse(args.getBypassSpecCache());
+    assertTrue(args.getSignOwner());
+    assertTrue(args.getSignViewer());
     assertNull(args.getRequestOption("random"));
   }
 
   @Test
   public void testInitFromRequest_oauthDefaults() throws Exception {
-    FakeHttpServletRequest req = new FakeHttpServletRequest();
+    HttpServletRequest req = mock(HttpServletRequest.class);
     OAuthArguments args = new OAuthArguments(AuthType.OAUTH, req);
     assertEquals(UseToken.ALWAYS, args.getUseToken());
   }
@@ -197,29 +200,29 @@ public class OAuthArgumentsTest {
 
   @Test
   public void testParseUseToken() throws Exception {
-    FakeHttpServletRequest req = new FakeHttpServletRequest();
-    req.setParameter("OAUTH_USE_TOKEN", "ALWAYS");
+    HttpServletRequest req = mock(HttpServletRequest.class);
+    when(req.getParameter("OAUTH_USE_TOKEN")).thenReturn("ALWAYS");
     OAuthArguments args = new OAuthArguments(AuthType.SIGNED, req);
     assertEquals(UseToken.ALWAYS, args.getUseToken());
 
-    req.setParameter("OAUTH_USE_TOKEN", "if_available");
+    when(req.getParameter("OAUTH_USE_TOKEN")).thenReturn("if_available");
     args = new OAuthArguments(AuthType.SIGNED, req);
     assertEquals(UseToken.IF_AVAILABLE, args.getUseToken());
 
-    req.setParameter("OAUTH_USE_TOKEN", "never");
+    when(req.getParameter("OAUTH_USE_TOKEN")).thenReturn("never");
     args = new OAuthArguments(AuthType.SIGNED, req);
     assertEquals(UseToken.NEVER, args.getUseToken());
 
-    req.setParameter("OAUTH_USE_TOKEN", "");
+    when(req.getParameter("OAUTH_USE_TOKEN")).thenReturn("");
     args = new OAuthArguments(AuthType.SIGNED, req);
     assertEquals(UseToken.NEVER, args.getUseToken());
 
-    req.setParameter("OAUTH_USE_TOKEN", "");
+    when(req.getParameter("OAUTH_USE_TOKEN")).thenReturn("");
     args = new OAuthArguments(AuthType.OAUTH, req);
     assertEquals(UseToken.ALWAYS, args.getUseToken());
 
     try {
-      req.setParameter("OAUTH_USE_TOKEN", "stuff");
+      when(req.getParameter("OAUTH_USE_TOKEN")).thenReturn("stuff");
       new OAuthArguments(AuthType.OAUTH, req);
       fail("Should have thrown");
     } catch (GadgetException e) {

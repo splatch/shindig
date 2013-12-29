@@ -16,14 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.shindig.common.util;
+package org.apache.shindig.api.auth;
 
 /**
- * Simple source of current time to use for dependency injection.
+ * Exceptions thrown by SecurityTokenCodec implementations.
  */
-public class TimeSource {
+public class SecurityTokenException extends Exception {
+  private static final long serialVersionUID = 1L;
 
-  public long currentTimeMillis() {
-    return System.currentTimeMillis();
+  public SecurityTokenException(String message) {
+    super(message);
+  }
+  public SecurityTokenException(Exception cause) {
+    super(cause);
+  }
+  public SecurityTokenException(String message, Exception cause) {
+    super(message, cause);
   }
 }

@@ -25,6 +25,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.crypto.BasicBlobCrypter;
 import org.apache.shindig.common.crypto.BlobCrypter;
@@ -120,6 +121,7 @@ public class OAuth2Module extends AbstractModule {
         @Named(OAuth2Module.OAUTH2_IMPORT_CLEAN) final boolean importClean,
         final Authority authority, final OAuth2Cache cache, final OAuth2Persister persister,
         final OAuth2Encrypter encrypter,
+        ResourceLoader resourceLoader,
         @Nullable @Named("shindig.contextroot") final String contextRoot,
         @Named(OAuth2FetcherConfig.OAUTH2_STATE_CRYPTER) final BlobCrypter stateCrypter) {
 
@@ -128,7 +130,7 @@ public class OAuth2Module extends AbstractModule {
 
       if (importFromConfig) {
         try {
-          final OAuth2Persister source = new JSONOAuth2Persister(encrypter, authority,
+          final OAuth2Persister source = new JSONOAuth2Persister(encrypter, authority, resourceLoader,
                   globalRedirectUri, contextRoot);
           BasicOAuth2Store.runImport(source, persister, importClean);
         } catch (final OAuth2PersistenceException e) {

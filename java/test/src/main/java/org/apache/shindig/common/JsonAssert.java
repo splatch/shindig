@@ -22,17 +22,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
+import org.apache.shindig.api.json.JsonSerializer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public final class JsonAssert {
-  private JsonAssert() {}
+public class JsonAssert {
+  private final JsonSerializer serializer;
 
-  public static void assertJsonArrayEquals(JSONArray expected, JSONArray actual) throws Exception {
+  public JsonAssert(JsonSerializer serializer) {
+    this.serializer = serializer;
+  }
+
+  public void assertJsonArrayEquals(JSONArray expected, JSONArray actual) throws Exception {
     assertJsonArrayEquals(null, expected, actual);
   }
 
-  public static void assertJsonArrayEquals(String message, JSONArray expected, JSONArray actual)
+  public void assertJsonArrayEquals(String message, JSONArray expected, JSONArray actual)
           throws Exception {
     if (expected.length() != actual.length()) {
       assertEquals("Arrays are not of equal length", expected.toString(), actual.toString());
@@ -55,12 +60,12 @@ public final class JsonAssert {
     }
   }
 
-  public static void assertJsonObjectEquals(JSONObject expected, JSONObject actual)
+  public void assertJsonObjectEquals(JSONObject expected, JSONObject actual)
           throws Exception {
     assertJsonObjectEquals(null, expected, actual);
   }
 
-  public static void assertJsonObjectEquals(String message, JSONObject expected, JSONObject actual)
+  public void assertJsonObjectEquals(String message, JSONObject expected, JSONObject actual)
           throws Exception {
     if (expected.length() != actual.length()) {
       assertEquals("Objects are not of equal size", expected.toString(2), actual.toString(2));
@@ -90,11 +95,11 @@ public final class JsonAssert {
     }
   }
 
-  public static void assertJsonEquals(String expected, String actual) throws Exception {
+  public void assertJsonEquals(String expected, String actual) throws Exception {
     assertJsonEquals(null, expected, actual);
   }
 
-  public static void assertJsonEquals(String message, String expected, String actual)
+  public void assertJsonEquals(String message, String expected, String actual)
           throws Exception {
     switch (expected.charAt(0)) {
     case '{':
@@ -109,20 +114,21 @@ public final class JsonAssert {
     }
   }
 
-  public static void assertObjectEquals(Object expected, Object actual) throws Exception {
+  public void assertObjectEquals(Object expected, Object actual) throws Exception {
     assertObjectEquals(null, expected, actual);
   }
 
-  public static void assertObjectEquals(String message, Object expected, Object actual)
+  public void assertObjectEquals(String message, Object expected, Object actual)
           throws Exception {
     if (!(expected instanceof String)) {
-      expected = JsonSerializer.serialize(expected);
+      expected = serializer.serialize(expected);
     }
 
     if (!(actual instanceof String)) {
-      actual = JsonSerializer.serialize(actual);
+      actual = serializer.serialize(actual);
     }
 
     assertJsonEquals(message, (String) expected, (String) actual);
   }
+
 }

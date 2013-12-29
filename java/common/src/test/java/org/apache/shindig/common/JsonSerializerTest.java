@@ -18,7 +18,6 @@
  */
 package org.apache.shindig.common;
 
-import static org.apache.shindig.common.JsonAssert.assertJsonEquals;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Strings;
@@ -47,14 +46,18 @@ import com.google.common.collect.LinkedHashMultimap;
  * This class may be executed to perform micro benchmarks comparing the performance of the
  * serializer with that of json.org and net.sf.json.
  */
-public class JsonSerializerTest {
+public class JsonSerializerTest extends JsonAssert {
 
   private static final String JSON_POJO_AS_JSON = "{string:'string-value',integer:100,'simple!':3}";
+
+  public JsonSerializerTest() {
+    super(new DefaultJsonSerializer());
+  }
 
   @Test
   public void serializeSimpleJsonObject() throws Exception {
     String json = "{foo:'bar'}";
-    assertJsonEquals(json, JsonSerializer.serialize(new JSONObject(json)));
+    assertJsonEquals(json, new DefaultJsonSerializer().serialize(new JSONObject(json)));
   }
 
   @Test
@@ -63,7 +66,7 @@ public class JsonSerializerTest {
     map.put("hello", "world");
     map.put("foo", "bar");
     map.put("remove", null);
-    assertJsonEquals("{hello:'world',foo:'bar'}", JsonSerializer.serialize(map));
+    assertJsonEquals("{hello:'world',foo:'bar'}", new DefaultJsonSerializer().serialize(map));
   }
 
   @Test
@@ -72,25 +75,25 @@ public class JsonSerializerTest {
     Set<String> methods = ImmutableSet.of("system.listMethods", "people.get");
     map.putAll("hostEndpoint", methods);
     assertJsonEquals("{hostEndpoint : ['system.listMethods', 'people.get']}",
-        JsonSerializer.serialize(map));
+        new DefaultJsonSerializer().serialize(map));
   }
 
   @Test
   public void serializeSimpleCollection() throws Exception {
     Collection<String> collection = Arrays.asList("foo", null, "bar", "baz", null);
-    assertJsonEquals("['foo','bar','baz']", JsonSerializer.serialize(collection));
+    assertJsonEquals("['foo','bar','baz']", new DefaultJsonSerializer().serialize(collection));
   }
 
   @Test
   public void serializeArray() throws Exception {
     String[] array = {"foo", null, "bar", "baz"};
-    assertJsonEquals("['foo','bar','baz']", JsonSerializer.serialize(array));
+    assertJsonEquals("['foo','bar','baz']", new DefaultJsonSerializer().serialize(array));
   }
 
   @Test
   public void serializeJsonArray() throws Exception {
     JSONArray array = new JSONArray(new String[] {"foo", null, "bar", "baz"});
-    assertJsonEquals("['foo','bar','baz']", JsonSerializer.serialize(array));
+    assertJsonEquals("['foo','bar','baz']", new DefaultJsonSerializer().serialize(array));
   }
 
   @Test
@@ -99,26 +102,26 @@ public class JsonSerializerTest {
     array.put(new JsonPojo());
     JSONObject object = new JSONObject();
     object.put("array", array);
-    assertJsonEquals("{'array': [" + JSON_POJO_AS_JSON + "]}", JsonSerializer.serialize(object));
+    assertJsonEquals("{'array': [" + JSON_POJO_AS_JSON + "]}", new DefaultJsonSerializer().serialize(object));
   }
 
   @Test
   public void serializeJsonObjectWithNullPropertyValue() throws Exception {
     String json = "{foo:null}";
-    assertJsonEquals(json, JsonSerializer.serialize(new JSONObject(json)));
+    assertJsonEquals(json, new DefaultJsonSerializer().serialize(new JSONObject(json)));
   }
 
   @Test
   public void serializePrimitives() throws Exception {
-    assertEquals("null", JsonSerializer.serialize((Object) null));
-    assertEquals("\"hello\"", JsonSerializer.serialize("hello"));
-    assertEquals("100", JsonSerializer.serialize(100));
-    assertEquals("125.0", JsonSerializer.serialize(125.0f));
-    assertEquals("126.0", JsonSerializer.serialize(126.0));
-    assertEquals("1", JsonSerializer.serialize(1L));
-    assertEquals("\"RUNTIME\"", JsonSerializer.serialize(RetentionPolicy.RUNTIME));
+    assertEquals("null", new DefaultJsonSerializer().serialize((Object) null));
+    assertEquals("\"hello\"", new DefaultJsonSerializer().serialize("hello"));
+    assertEquals("100", new DefaultJsonSerializer().serialize(100));
+    assertEquals("125.0", new DefaultJsonSerializer().serialize(125.0f));
+    assertEquals("126.0", new DefaultJsonSerializer().serialize(126.0));
+    assertEquals("1", new DefaultJsonSerializer().serialize(1L));
+    assertEquals("\"RUNTIME\"", new DefaultJsonSerializer().serialize(RetentionPolicy.RUNTIME));
     assertEquals("\"string buf\"",
-        JsonSerializer.serialize(new StringBuilder().append("string").append(' ').append("buf")));
+        new DefaultJsonSerializer().serialize(new StringBuilder().append("string").append(' ').append("buf")));
   }
 
   public static class JsonPojo {
@@ -166,7 +169,7 @@ public class JsonSerializerTest {
     JsonPojo pojo = new JsonPojo();
 
     assertJsonEquals(JSON_POJO_AS_JSON,
-        JsonSerializer.serialize(pojo));
+        new DefaultJsonSerializer().serialize(pojo));
   }
 
   @Test
@@ -179,7 +182,7 @@ public class JsonSerializerTest {
         "string", "hello!");
     assertJsonEquals(
         "{int:3,double:2.7,bool:true,map:{hello:'world',foo:'bar'},string:'hello!'}",
-        JsonSerializer.serialize(map));
+        new DefaultJsonSerializer().serialize(map));
   }
 
   @Test
@@ -193,13 +196,13 @@ public class JsonSerializerTest {
         "hello!");
     assertJsonEquals(
         "[3,2.7,true,['one','two','three'],['foo','bar'],'hello!']",
-        JsonSerializer.serialize(data));
+        new DefaultJsonSerializer().serialize(data));
   }
 
   @Test
   public void emptyString() throws Exception {
     StringBuilder builder = new StringBuilder();
-    JsonSerializer.appendString(builder, "");
+    new DefaultJsonSerializer().appendString(builder, "");
 
     assertEquals("\"\"", builder.toString());
   }
@@ -207,7 +210,7 @@ public class JsonSerializerTest {
   @Test
   public void escapeSequences() throws Exception {
     StringBuilder builder = new StringBuilder();
-    JsonSerializer.appendString(builder, "\t\r value \\\foo\b\uFFFF\uBCAD\n\u0083");
+    new DefaultJsonSerializer().appendString(builder, "\t\r value \\\foo\b\uFFFF\uBCAD\n\u0083");
 
     assertEquals("\"\\t\\r value \\\\\\foo\\b\uFFFF\uBCAD\\n\\u0083\"", builder.toString());
   }
@@ -215,7 +218,7 @@ public class JsonSerializerTest {
   @Test
   public void escapeBrackets() throws Exception {
     StringBuilder builder = new StringBuilder();
-    JsonSerializer.appendString(builder, "Hello<world>foo < bar");
+    new DefaultJsonSerializer().appendString(builder, "Hello<world>foo < bar");
 
     assertEquals("\"Hello\\u003cworld\\u003efoo \\u003c bar\"", builder.toString());
 
@@ -244,7 +247,7 @@ public class JsonSerializerTest {
     long start = System.currentTimeMillis();
     String result = null;
     for (int i = 0; i < iterations; ++i) {
-      result = JsonSerializer.serialize(data);
+      result = new DefaultJsonSerializer().serialize(data);
     }
     System.out.println("serializer: " + avg(start, System.currentTimeMillis(), iterations) + "ms");
     return result;

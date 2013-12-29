@@ -19,7 +19,7 @@
 package org.apache.shindig.gadgets.http;
 
 import com.google.common.base.Strings;
-import org.apache.shindig.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.AuthenticationMode;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.protocol.BaseRequestItem;
 import org.apache.shindig.protocol.Operation;

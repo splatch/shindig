@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.gadgets.js;
 
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.RenderingContext;
@@ -52,12 +52,15 @@ public class ConfigInjectionProcessor implements JsProcessor {
 
   private final FeatureRegistryProvider registryProvider;
   private final ConfigProcessor configProcessor;
+  private final JsonSerializer serializer;
 
   @Inject
   public ConfigInjectionProcessor(
       FeatureRegistryProvider registryProvider,
+      JsonSerializer serializer,
       ConfigProcessor configProcessor) {
     this.registryProvider = registryProvider;
+    this.serializer = serializer;
     this.configProcessor = configProcessor;
   }
 
@@ -82,7 +85,7 @@ public class ConfigInjectionProcessor implements JsProcessor {
       Map<String, Object> config = configProcessor.getConfig(
           ctx.getContainer(), newReq, request.getHost(), null);
       if (!config.isEmpty()) {
-        String configJson = JsonSerializer.serialize(config);
+        String configJson = serializer.serialize(config);
         if (allReq.contains(CONFIG_FEATURE) || loaded.contains(CONFIG_FEATURE)) {
           // config lib is present: pass it data
           injectBaseConfig(configJson, builder);

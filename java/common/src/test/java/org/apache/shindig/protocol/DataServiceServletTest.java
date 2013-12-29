@@ -18,6 +18,9 @@
  */
 package org.apache.shindig.protocol;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -25,52 +28,60 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Strings;
+
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AuthInfoUtil;
-import org.apache.shindig.common.testing.FakeGadgetToken;
-import org.apache.shindig.common.testing.FakeHttpServletRequest;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.protocol.conversion.BeanConverter;
 import org.apache.shindig.protocol.conversion.BeanJsonConverter;
-import org.easymock.IMocksControl;
-import org.easymock.EasyMock;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
-public class DataServiceServletTest extends Assert {
+@RunWith(MockitoJUnitRunner.class)
+public class DataServiceServletTest {
 
-  private static final FakeGadgetToken FAKE_GADGET_TOKEN = new FakeGadgetToken()
-      .setOwnerId("john.doe").setViewerId("john.doe");
+  @Mock
+  private SecurityToken FAKE_GADGET_TOKEN;
 
+  @Mock
   private HttpServletRequest req;
+
+  @Mock
   private HttpServletResponse res;
-  private DataServiceServlet servlet;
+
+  @Mock
   private BeanJsonConverter jsonConverter;
+
+  @Mock
   private BeanConverter xmlConverter;
+
+  @Mock
   private BeanConverter atomConverter;
+
+  @Mock
   private ContainerConfig containerConfig;
 
-  private IMocksControl mockControl = EasyMock.createNiceControl();
+  private DataServiceServlet servlet;
 
   @Before
   public void setUp() throws Exception {
-    servlet = new DataServiceServlet();
-    req = mockControl.createMock(HttpServletRequest.class);
-    res = mockControl.createMock(HttpServletResponse.class);
-    jsonConverter = mockControl.createMock(BeanJsonConverter.class);
-    xmlConverter = mockControl.createMock(BeanConverter.class);
-    atomConverter = mockControl.createMock(BeanConverter.class);
-    containerConfig = mockControl.createMock(ContainerConfig.class);
+    when(FAKE_GADGET_TOKEN.getOwnerId()).thenReturn("john.doe");
+    when(FAKE_GADGET_TOKEN.getViewerId()).thenReturn("john.doe");
 
-    EasyMock.expect(jsonConverter.getContentType()).andReturn(
-        ContentTypes.OUTPUT_JSON_CONTENT_TYPE).anyTimes();
-    EasyMock.expect(xmlConverter.getContentType()).andReturn(
-        ContentTypes.OUTPUT_XML_CONTENT_TYPE).anyTimes();
-    EasyMock.expect(atomConverter.getContentType()).andReturn(
-        ContentTypes.OUTPUT_ATOM_CONTENT_TYPE).anyTimes();
+    servlet = new DataServiceServlet();
+
+    when(jsonConverter.getContentType()).thenReturn(
+        ContentTypes.OUTPUT_JSON_CONTENT_TYPE);
+    when(xmlConverter.getContentType()).thenReturn(
+        ContentTypes.OUTPUT_XML_CONTENT_TYPE);
+    when(atomConverter.getContentType()).thenReturn(
+        ContentTypes.OUTPUT_ATOM_CONTENT_TYPE);
 
     HandlerRegistry registry = new DefaultHandlerRegistry(null, jsonConverter,
         new HandlerExecutionListener.NoOpHandler());
@@ -100,21 +111,19 @@ public class DataServiceServletTest extends Assert {
 
     String method = Strings.isNullOrEmpty(overrideMethod) ? actualMethod : overrideMethod;
 
-    EasyMock.expect(jsonConverter.convertToString(
+    String response = "{ 'entry' : " + TestHandler.REST_RESULTS.get(method) + " }";
+    when(jsonConverter.convertToString(
         ImmutableMap.of("entry", TestHandler.REST_RESULTS.get(method))))
-        .andReturn("{ 'entry' : " + TestHandler.REST_RESULTS.get(method) + " }");
+        .thenReturn(response);
 
-    PrintWriter writerMock = EasyMock.createMock(PrintWriter.class);
-    EasyMock.expect(res.getWriter()).andReturn(writerMock);
-    writerMock.write(TestHandler.GET_RESPONSE);
-    EasyMock.expectLastCall();
+    PrintWriter writerMock = mock(PrintWriter.class);
+    when(res.getWriter()).thenReturn(writerMock);
+
     res.setCharacterEncoding("UTF-8");
     res.setContentType(ContentTypes.OUTPUT_JSON_CONTENT_TYPE);
 
-    mockControl.replay();
     servlet.service(req, res);
-    mockControl.verify();
-    mockControl.reset();
+    verify(writerMock).write(response);
   }
 
   @Test
@@ -150,25 +159,18 @@ public class DataServiceServletTest extends Assert {
     res.setCharacterEncoding("UTF-8");
     res.setContentType(ContentTypes.OUTPUT_JSON_CONTENT_TYPE);
 
-    mockControl.replay();
     servlet.service(req, res);
-    mockControl.verify();
-    mockControl.reset();
   }
 
   private void setupRequest(String pathInfo, String actualMethod, String overrideMethod)
       throws IOException {
-    FakeHttpServletRequest fakeReq = new FakeHttpServletRequest("/social/rest", pathInfo, "");
-    fakeReq.setPathInfo(pathInfo);
-    fakeReq.setParameter(DataServiceServlet.X_HTTP_METHOD_OVERRIDE, overrideMethod);
-    fakeReq.setCharacterEncoding("UTF-8");
-    if (!("GET").equals(actualMethod) && !("HEAD").equals(actualMethod)) {
-      fakeReq.setPostData("", "UTF-8");
-    }
-    fakeReq.setMethod(actualMethod);
-    fakeReq.setAttribute(AuthInfoUtil.Attribute.SECURITY_TOKEN.getId(), FAKE_GADGET_TOKEN);
-    fakeReq.setContentType(ContentTypes.OUTPUT_JSON_CONTENT_TYPE);
-    req = fakeReq;
+    when(req.getRequestURL()).thenReturn(new StringBuffer("/social/rest"));
+    when(req.getPathInfo()).thenReturn(pathInfo);
+    when(req.getMethod()).thenReturn(actualMethod);
+    when(req.getParameter(DataServiceServlet.X_HTTP_METHOD_OVERRIDE)).thenReturn(overrideMethod);
+    when(req.getCharacterEncoding()).thenReturn("UTF-8");
+    when(req.getAttribute(AuthInfoUtil.Attribute.SECURITY_TOKEN.getId())).thenReturn(FAKE_GADGET_TOKEN);
+    when(req.getContentType()).thenReturn(ContentTypes.OUTPUT_JSON_CONTENT_TYPE);
   }
 
   @Test

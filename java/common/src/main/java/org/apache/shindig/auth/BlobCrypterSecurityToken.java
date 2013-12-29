@@ -20,6 +20,9 @@ package org.apache.shindig.auth;
 
 import java.util.EnumSet;
 import java.util.Map;
+
+import org.apache.shindig.api.auth.AuthenticationMode;
+import org.apache.shindig.api.auth.SecurityToken;
 /**
  * Authentication based on a provided BlobCrypter.
  *
@@ -54,6 +57,11 @@ public class BlobCrypterSecurityToken extends AbstractSecurityToken {
 
   public String getAuthenticationMode() {
     return AuthenticationMode.SECURITY_TOKEN_URL_PARAMETER.name();
+  }
+
+  @Override
+  public SecurityToken setAuthenticationMode(AuthenticationMode mode) {
+    throw new UnsupportedOperationException();
   }
 
   public boolean isAnonymous() {

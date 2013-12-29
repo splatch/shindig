@@ -18,6 +18,8 @@
  */
 package org.apache.shindig.auth;
 
+import org.apache.shindig.api.auth.SecurityToken;
+
 /**
  * A SecurityToken that forwards all methods calls to another token. Subclasses should override
  * one or more methods to change or add behavior.

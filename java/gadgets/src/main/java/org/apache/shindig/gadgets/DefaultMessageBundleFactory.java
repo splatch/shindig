@@ -20,6 +20,7 @@ package org.apache.shindig.gadgets;
 
 import org.apache.shindig.api.cache.Cache;
 import org.apache.shindig.api.cache.CacheProvider;
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.http.RequestPipeline;
 import org.apache.shindig.gadgets.spec.GadgetSpec;
@@ -41,13 +42,16 @@ public class DefaultMessageBundleFactory extends AbstractSpecFactory<MessageBund
     implements MessageBundleFactory {
   private static final Locale ALL_ALL = new Locale("all", "ALL");
   public static final String CACHE_NAME = "messageBundles";
+  private final JsonSerializer serializer;
 
   @Inject
   public DefaultMessageBundleFactory(ExecutorService executor,
                                      RequestPipeline pipeline,
                                      CacheProvider cacheProvider,
+                                     JsonSerializer serializer,
                                      @Named("shindig.cache.xml.refreshInterval") long refresh) {
     super(MessageBundle.class, executor, pipeline, makeCache(cacheProvider), refresh);
+    this.serializer = serializer;
   }
 
   private static Cache<String, Object> makeCache(CacheProvider cacheProvider) {
@@ -56,7 +60,7 @@ public class DefaultMessageBundleFactory extends AbstractSpecFactory<MessageBund
 
   @Override
   protected MessageBundle parse(String content, Query query) throws GadgetException {
-    return new MessageBundle(((LocaleQuery) query).locale, content);
+    return new MessageBundle(serializer, ((LocaleQuery) query).locale, content);
   }
 
   public MessageBundle getBundle(GadgetSpec spec, Locale locale, boolean ignoreCache, String container, String view)
@@ -89,7 +93,7 @@ public class DefaultMessageBundleFactory extends AbstractSpecFactory<MessageBund
       all = getBundleFor(spec, ALL_ALL, ignoreCache, container, view);
     }
 
-    return new MessageBundle(all, country, lang, exact);
+    return new MessageBundle(serializer, country, lang, exact);
   }
 
   private MessageBundle getBundleFor(GadgetSpec spec, Locale locale, boolean ignoreCache, String container, String view)

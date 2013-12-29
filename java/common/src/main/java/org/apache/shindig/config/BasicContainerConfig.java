@@ -23,7 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.common.DefaultJsonSerializer;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -140,7 +140,7 @@ public class BasicContainerConfig implements ContainerConfig {
 
   @Override
   public String toString() {
-    return JsonSerializer.serialize(config);
+    return new DefaultJsonSerializer().serialize(config);
   }
 
   protected class BasicTransaction implements Transaction {

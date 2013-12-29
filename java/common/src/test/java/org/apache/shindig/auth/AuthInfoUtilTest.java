@@ -18,32 +18,50 @@
  */
 package org.apache.shindig.auth;
 
-import org.apache.shindig.common.testing.FakeGadgetToken;
-import org.apache.shindig.common.testing.FakeHttpServletRequest;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-import org.junit.Assert;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.auth.AuthInfoUtil.Attribute;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class AuthInfoUtilTest extends Assert {
+@RunWith(MockitoJUnitRunner.class)
+public class AuthInfoUtilTest {
+
+  private static final String FAKE_AUTH = "FakeAuth";
+
+@Mock
+  private HttpServletRequest req;
+
+  @Mock
+  private SecurityToken token;
 
   @Test
   public void testToken() throws Exception {
-    HttpServletRequest req = new FakeHttpServletRequest();
-    SecurityToken token = new FakeGadgetToken();
-
-    AuthInfoUtil.setSecurityTokenForRequest(req, token);
+    when(req.getAttribute(Attribute.SECURITY_TOKEN.getId())).thenReturn(token);
 
     assertEquals(token, AuthInfoUtil.getSecurityTokenFromRequest(req));
   }
 
   @Test
   public void testAuthType() throws Exception {
-    HttpServletRequest req = new FakeHttpServletRequest();
+    when(req.getAttribute(Attribute.AUTH_TYPE.getId())).thenReturn(FAKE_AUTH);
 
-    AuthInfoUtil.setAuthTypeForRequest(req, "FakeAuth");
-
-    assertEquals("FakeAuth", AuthInfoUtil.getAuthTypeFromRequest(req));
+    assertEquals(FAKE_AUTH, AuthInfoUtil.getAuthTypeFromRequest(req));
   }
+
+  @Test
+  public void testWrites() {
+    AuthInfoUtil.setSecurityTokenForRequest(req, token);
+    AuthInfoUtil.setAuthTypeForRequest(req, FAKE_AUTH);
+
+    verify(req).setAttribute(Attribute.SECURITY_TOKEN.getId(), token);
+    verify(req).setAttribute(Attribute.AUTH_TYPE.getId(), FAKE_AUTH);
+  }
+
 }

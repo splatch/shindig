@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.protocol;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.protocol.conversion.BeanConverter;
 
 import java.io.Reader;

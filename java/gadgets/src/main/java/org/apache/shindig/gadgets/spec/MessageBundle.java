@@ -18,7 +18,8 @@
  */
 package org.apache.shindig.gadgets.spec;
 
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.api.json.JsonSerializer;
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.xml.XmlException;
 import org.apache.shindig.common.xml.XmlUtil;
 import org.apache.shindig.gadgets.parse.DefaultHtmlSerializer;
@@ -38,23 +39,27 @@ import java.util.Map;
  * Represents a messagebundle structure.
  */
 public class MessageBundle {
-  public static final MessageBundle EMPTY = new MessageBundle();
+  public static final MessageBundle EMPTY = new MessageBundle(new DefaultJsonSerializer());
 
   private static final DefaultHtmlSerializer HTML_SERIALIZER = new DefaultHtmlSerializer();
+  private final JsonSerializer serializer;
   private final ImmutableMap<String, String> messages;
   private final String languageDirection;
 
   /* lazily created cache of the json-encoded form of the bundle */
   private String jsonString;
 
+
    /**
    * Constructs a message bundle from input xml (fetched from an external file).
    *
+   * @param serializer Json serializer.
    * @param locale The LocaleSpec element that this bundle was constructed from.
    * @param xml The content of the remote file.
    * @throws SpecParserException if parsing fails.
    */
-  public MessageBundle(LocaleSpec locale, String xml) throws SpecParserException {
+  public MessageBundle(JsonSerializer serializer, LocaleSpec locale, String xml) throws SpecParserException {
+    this.serializer = serializer;
     Element doc;
     try {
       doc = XmlUtil.parse(xml);
@@ -69,20 +74,25 @@ public class MessageBundle {
    /**
    * Constructs a message bundle from a prebuilt map.
    *
+   * @param serializer Json serializer.
    * @param locale The LocaleSpec element that this bundle was constructed from.
    * @param map The content of the message map.
    */
-  public MessageBundle(LocaleSpec locale, Map<String, String> map) {
+  public MessageBundle(JsonSerializer serializer, LocaleSpec locale, Map<String, String> map) {
+     this.serializer = serializer;
      messages = ImmutableMap.copyOf(map);
      languageDirection = locale.getLanguageDirection();
    }
 
   /**
    * Constructs a message bundle from a /ModulePrefs/Locale with nested messages.
+   * 
+   * @param serializer Json serializer.
    * @param element XML Dom element to parse
    * @throws SpecParserException when badly formed xml is provided
    */
-  public MessageBundle(Element element) throws SpecParserException {
+  public MessageBundle(JsonSerializer serializer, Element element) throws SpecParserException {
+    this.serializer = serializer;
     messages = parseMessages(element);
     languageDirection = XmlUtil.getAttribute(element, "language_direction", "ltr");
   }
@@ -92,7 +102,8 @@ public class MessageBundle {
    *
    * @param bundles the bundles to merge, in order
    */
-  public MessageBundle(MessageBundle... bundles) {
+  public MessageBundle(JsonSerializer serializer, MessageBundle... bundles) {
+    this.serializer = serializer;
     Map<String, String> merged = Maps.newHashMap();
     String dir = null;
     for (MessageBundle bundle : bundles) {
@@ -103,7 +114,8 @@ public class MessageBundle {
     languageDirection = dir != null ? dir : "ltr";
   }
 
-  private MessageBundle() {
+  private MessageBundle(JsonSerializer serializer) {
+    this.serializer = serializer;
     this.messages = ImmutableMap.of();
     jsonString = "{}";
     languageDirection = "ltr";
@@ -131,7 +143,7 @@ public class MessageBundle {
    */
   public String toJSONString() {
     if (jsonString == null) {
-      jsonString = JsonSerializer.serialize(messages);
+      jsonString = serializer.serialize(messages);
     }
     return jsonString;
   }

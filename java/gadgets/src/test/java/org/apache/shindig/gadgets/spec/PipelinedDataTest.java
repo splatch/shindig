@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.JsonAssert;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlUtil;
@@ -45,12 +46,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class PipelinedDataTest {
+public class PipelinedDataTest extends JsonAssert {
 
   private static final Uri GADGET_URI = Uri.parse("http://example.org/");
   private ELResolver elResolver;
   private Map<String, Object> elValues;
   private Expressions expressions;
+
+  public PipelinedDataTest() {
+    super(new DefaultJsonSerializer());
+  }
 
   @Before
   public void setUp() {
@@ -89,7 +94,7 @@ public class PipelinedDataTest {
     assertEquals(1, batch.getPreloads().size());
     PipelinedData.BatchItem batchItem = batch.getPreloads().get("key");
     assertEquals(PipelinedData.BatchType.SOCIAL, batchItem.getType());
-    JsonAssert.assertObjectEquals(expected, batchItem.getData());
+    assertObjectEquals(expected, batchItem.getData());
   }
 
   @Test
@@ -119,7 +124,7 @@ public class PipelinedDataTest {
     assertEquals(1, batch.getPreloads().size());
     PipelinedData.BatchItem batchItem = batch.getPreloads().get("key");
     assertEquals(PipelinedData.BatchType.SOCIAL, batchItem.getType());
-    JsonAssert.assertObjectEquals(expected, batchItem.getData());
+    assertObjectEquals(expected, batchItem.getData());
     assertNull(batch.getNextBatch(elResolver));
   }
 
@@ -153,7 +158,7 @@ public class PipelinedDataTest {
     assertEquals(1, batch.getPreloads().size());
     PipelinedData.BatchItem batchItem = batch.getPreloads().get("key");
     assertEquals(PipelinedData.BatchType.SOCIAL, batchItem.getType());
-    JsonAssert.assertObjectEquals(expected, batchItem.getData());
+    assertObjectEquals(expected, batchItem.getData());
   }
 
   @Test
@@ -176,7 +181,7 @@ public class PipelinedDataTest {
     assertEquals(1, batch.getPreloads().size());
     PipelinedData.BatchItem batchItem = batch.getPreloads().get("key");
     assertEquals(PipelinedData.BatchType.SOCIAL, batchItem.getType());
-    JsonAssert.assertObjectEquals(expected, batchItem.getData());
+    assertObjectEquals(expected, batchItem.getData());
   }
 
   @Test
@@ -199,7 +204,7 @@ public class PipelinedDataTest {
     assertEquals(1, batch.getPreloads().size());
     PipelinedData.BatchItem batchItem = batch.getPreloads().get("key");
     assertEquals(PipelinedData.BatchType.SOCIAL, batchItem.getType());
-    JsonAssert.assertObjectEquals(expected, batchItem.getData());
+    assertObjectEquals(expected, batchItem.getData());
   }
 
   @Test
@@ -223,7 +228,7 @@ public class PipelinedDataTest {
     assertEquals(1, batch.getPreloads().size());
     PipelinedData.BatchItem batchItem = batch.getPreloads().get("key");
     assertEquals(PipelinedData.BatchType.SOCIAL, batchItem.getType());
-    JsonAssert.assertObjectEquals(expected, batchItem.getData());
+    assertObjectEquals(expected, batchItem.getData());
   }
 
   @Test
@@ -252,7 +257,7 @@ public class PipelinedDataTest {
     assertEquals(1, batch.getPreloads().size());
     PipelinedData.BatchItem batchItem = batch.getPreloads().get("key");
     assertEquals(PipelinedData.BatchType.SOCIAL, batchItem.getType());
-    JsonAssert.assertObjectEquals(expected, batchItem.getData());
+    assertObjectEquals(expected, batchItem.getData());
   }
 
   @Test
@@ -281,7 +286,7 @@ public class PipelinedDataTest {
     assertEquals(1, batch.getPreloads().size());
     PipelinedData.BatchItem batchItem = batch.getPreloads().get("key");
     assertEquals(PipelinedData.BatchType.SOCIAL, batchItem.getType());
-    JsonAssert.assertObjectEquals(expected, batchItem.getData());
+    assertObjectEquals(expected, batchItem.getData());
   }
 
   @Test
@@ -386,7 +391,7 @@ public class PipelinedDataTest {
     boolean foundException = false;
     try {
       PipelinedData pipelinedData = new PipelinedData(XmlUtil.parse(xml), GADGET_URI);
-      PipelinedData.Batch batch = pipelinedData.getBatch(expressions, elResolver);
+      pipelinedData.getBatch(expressions, elResolver);
     } catch (RuntimeException e) {
       foundException = true;
     }

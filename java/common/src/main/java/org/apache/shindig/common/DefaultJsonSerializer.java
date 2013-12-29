@@ -36,6 +36,7 @@
  */
 package org.apache.shindig.common;
 
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.common.util.DateUtil;
 import org.apache.shindig.common.uri.Uri;
 import org.joda.time.DateTime;
@@ -65,17 +66,15 @@ import java.util.Map;
  *
  * To reduce output size, null values in json arrays and objects will always be removed.
  */
-public final class JsonSerializer {
+public final class DefaultJsonSerializer implements JsonSerializer {
   // Multiplier to use for allocating the buffer.
-  private static final int BASE_MULTIPLIER = 256;
+  private final int BASE_MULTIPLIER = 256;
 
-  private static final char[] HEX_DIGITS = {
+  private final char[] HEX_DIGITS = {
     '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
   };
 
-  private JsonSerializer() {}
-
-  public static String serialize(Object object) {
+  public String serialize(Object object) {
     StringBuilder buf = new StringBuilder(1024);
     try {
       append(buf, object);
@@ -88,7 +87,7 @@ public final class JsonSerializer {
   /**
    * Serialize a JSONObject. Does not guard against cyclical references.
    */
-  public static String serialize(JSONObject object) {
+  public String serialize(JSONObject object) {
     StringBuilder buf = new StringBuilder(object.length() * BASE_MULTIPLIER);
     try {
       appendJsonObject(buf, object);
@@ -102,7 +101,7 @@ public final class JsonSerializer {
   /**
    * Serializes a Map as a JSON object. Does not guard against cyclical references.
    */
-  public static String serialize(Map<String, ?> map) {
+  public String serialize(Map<String, ?> map) {
     StringBuilder buf = new StringBuilder(map.size() * BASE_MULTIPLIER);
     try {
       appendMap(buf, map);
@@ -116,7 +115,7 @@ public final class JsonSerializer {
   /**
    * Serializes a Collection as a JSON array. Does not guard against cyclical references.
    */
-  public static String serialize(Collection<?> collection) {
+  public String serialize(Collection<?> collection) {
     StringBuilder buf = new StringBuilder(collection.size() * BASE_MULTIPLIER);
     try {
       appendCollection(buf, collection);
@@ -130,7 +129,7 @@ public final class JsonSerializer {
   /**
    * Serializes an array as a JSON array. Does not guard against cyclical references
    */
-  public static String serialize(Object[] array) {
+  public String serialize(Object[] array) {
     StringBuilder buf = new StringBuilder(array.length * BASE_MULTIPLIER);
     try {
       appendArray(buf, array);
@@ -144,7 +143,7 @@ public final class JsonSerializer {
   /**
    * Serializes a JSON array. Does not guard against cyclical references
    */
-  public static String serialize(JSONArray array) {
+  public String serialize(JSONArray array) {
     StringBuilder buf = new StringBuilder(array.length() * BASE_MULTIPLIER);
     try {
       appendJsonArray(buf, array);
@@ -161,7 +160,7 @@ public final class JsonSerializer {
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
   @SuppressWarnings("unchecked")
-  public static void append(Appendable buf, Object value) throws IOException {
+  public void append(Appendable buf, Object value) throws IOException {
     if (value == null || value == JSONObject.NULL) {
       buf.append("null");
     } else if (value instanceof Number ||
@@ -200,7 +199,7 @@ public final class JsonSerializer {
    *
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
-  public static void appendPojo(Appendable buf, Object pojo) throws IOException {
+  public void appendPojo(Appendable buf, Object pojo) throws IOException {
     Map<String, Method> methods = JsonUtil.getGetters(pojo);
     buf.append('{');
     boolean firstDone = false;
@@ -242,7 +241,7 @@ public final class JsonSerializer {
    *
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
-  public static void appendArray(Appendable buf, Object[] array) throws IOException {
+  public void appendArray(Appendable buf, Object[] array) throws IOException {
     buf.append('[');
     boolean firstDone = false;
     for (Object o : array) {
@@ -262,7 +261,7 @@ public final class JsonSerializer {
    * Append a JSONArray to the buffer.
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
-  public static void appendJsonArray(Appendable buf, JSONArray array) throws IOException {
+  public void appendJsonArray(Appendable buf, JSONArray array) throws IOException {
     buf.append('[');
     boolean firstDone = false;
     for (int i = 0, j = array.length(); i < j; ++i) {
@@ -284,7 +283,7 @@ public final class JsonSerializer {
    *
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
-  public static void appendCollection(Appendable buf, Collection<?> collection)
+  public void appendCollection(Appendable buf, Collection<?> collection)
       throws IOException {
     buf.append('[');
     boolean firstDone = false;
@@ -306,7 +305,7 @@ public final class JsonSerializer {
    *
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
-  public static void appendMap(final Appendable buf, final Map<String, ?> map) throws IOException {
+  public void appendMap(final Appendable buf, final Map<String, ?> map) throws IOException {
     buf.append('{');
     boolean firstDone = false;
     for (Map.Entry<String, ?> entry : map.entrySet()) {
@@ -332,7 +331,7 @@ public final class JsonSerializer {
    *
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
-  public static void appendMultimap(Appendable buf, Multimap<String, Object> map) throws IOException {
+  public void appendMultimap(Appendable buf, Multimap<String, Object> map) throws IOException {
     appendMap(buf, map.asMap());
   }
 
@@ -342,7 +341,7 @@ public final class JsonSerializer {
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
   @SuppressWarnings("unchecked")
-  public static void appendJsonObject(Appendable buf, JSONObject object) throws IOException {
+  public void appendJsonObject(Appendable buf, JSONObject object) throws IOException {
     buf.append('{');
     Iterator<String> keys = object.keys();
     boolean firstDone = false;
@@ -368,7 +367,7 @@ public final class JsonSerializer {
    *
    * @throws IOException If {@link Appendable#append(char)} throws an exception.
    */
-  public static void appendString(Appendable buf, CharSequence string) throws IOException {
+  public void appendString(Appendable buf, CharSequence string) throws IOException {
     if (string == null || string.length() == 0) {
       buf.append("\"\"");
       return;

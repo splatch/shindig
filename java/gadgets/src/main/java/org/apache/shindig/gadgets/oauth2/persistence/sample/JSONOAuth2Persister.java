@@ -23,9 +23,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.servlet.Authority;
-import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
@@ -85,17 +85,16 @@ public class JSONOAuth2Persister implements OAuth2Persister {
           .getFilteredLogger(JSONOAuth2Persister.LOG_CLASS);
 
   @Inject
-  public JSONOAuth2Persister(final OAuth2Encrypter encrypter, final Authority authority,
-          final String globalRedirectUri, @Nullable
-          @Named("shindig.contextroot")
-          final String contextRoot) throws OAuth2PersistenceException {
+  public JSONOAuth2Persister(final OAuth2Encrypter encrypter, final Authority authority, ResourceLoader resourceLoader,
+          final String globalRedirectUri,
+          @Nullable @Named("shindig.contextroot") final String contextRoot) throws OAuth2PersistenceException {
     this.encrypter = encrypter;
     this.authority = authority;
     this.globalRedirectUri = globalRedirectUri;
     this.contextRoot = contextRoot;
     try {
       this.configFile = new JSONObject(
-              JSONOAuth2Persister.getJSONString(JSONOAuth2Persister.OAUTH2_CONFIG));
+              JSONOAuth2Persister.getJSONString(JSONOAuth2Persister.OAUTH2_CONFIG, resourceLoader));
     } catch (final Exception e) {
       if (JSONOAuth2Persister.LOG.isLoggable()) {
         JSONOAuth2Persister.LOG.log("OAuth2PersistenceException", e);
@@ -367,7 +366,7 @@ public class JSONOAuth2Persister implements OAuth2Persister {
     // does nothing
   }
 
-  private static String getJSONString(final String location) throws IOException {
-    return ResourceLoader.getContent(location);
+  private static String getJSONString(final String location, ResourceLoader resourceLoader) throws IOException {
+    return resourceLoader.getContent(location);
   }
 }

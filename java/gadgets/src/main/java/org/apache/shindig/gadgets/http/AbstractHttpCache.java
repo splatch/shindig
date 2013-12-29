@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.gadgets.AuthType;
 import org.apache.shindig.gadgets.uri.UriCommon;
 

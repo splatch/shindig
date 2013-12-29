@@ -19,7 +19,7 @@
 package org.apache.shindig.protocol;
 
 import org.apache.shindig.auth.AuthInfoUtil;
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.servlet.InjectedServlet;
 import org.apache.shindig.config.ContainerConfig;

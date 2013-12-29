@@ -33,9 +33,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.util.CharsetUtil;
+import org.apache.shindig.common.util.DefaultTimeSource;
 import org.apache.shindig.common.util.GenericDigestUtils;
 import org.apache.shindig.common.util.HMACType;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.api.time.TimeSource;
 import org.apache.shindig.common.util.Utf8UrlCoder;
 
 import com.google.common.base.Charsets;
@@ -58,7 +59,7 @@ public class BasicBlobCrypter implements BlobCrypter {
   /** minimum length of master key */
   public static final int MASTER_KEY_MIN_LEN = 16;
 
-  public TimeSource timeSource = new TimeSource();
+  public TimeSource timeSource = new DefaultTimeSource();
   private byte[] cipherKey;
   private byte[] hmacKey;
 

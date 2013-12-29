@@ -29,8 +29,8 @@ import static org.junit.Assert.assertNotNull;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.BasicSecurityToken;
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.AuthType;
 import org.apache.shindig.gadgets.oauth.OAuthArguments;

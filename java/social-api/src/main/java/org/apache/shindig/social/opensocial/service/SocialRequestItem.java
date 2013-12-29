@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.protocol.BaseRequestItem;
 import org.apache.shindig.protocol.conversion.BeanConverter;
 import org.apache.shindig.protocol.conversion.BeanJsonConverter;

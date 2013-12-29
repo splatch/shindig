@@ -21,6 +21,7 @@ package org.apache.shindig.protocol.conversion;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 
+import org.apache.shindig.common.DefaultJsonModule;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class BeanJsonConverterInjectedClassTest extends Assert {
 
   @Before
   public void setUp() throws Exception {
-    this.beanJsonConverter = new BeanJsonConverter(Guice.createInjector(new TestModule()));
+    this.beanJsonConverter = new InjectingBeanJsonConverter(Guice.createInjector(new DefaultJsonModule(), new TestModule()));
   }
 
   /**

@@ -18,6 +18,7 @@
  */
 package org.apache.shindig.gadgets.spec;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlUtil;
 import org.w3c.dom.Element;
@@ -73,7 +74,7 @@ public class LocaleSpec {
         throw new SpecParserException("Locale@messages url is invalid.");
       }
     }
-    messageBundle = new MessageBundle(element);
+    messageBundle = new MessageBundle(new DefaultJsonSerializer(), element);
   }
 
   public Locale getLocale() {

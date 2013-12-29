@@ -54,92 +54,6 @@
     </osgi.import>
   </properties>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins </groupId>
-        <artifactId>maven-eclipse-plugin</artifactId>
-      </plugin>
-    </plugins>
-    <resources>
-      <resource>
-        <targetPath>config</targetPath>
-        <directory>${basedir}/../../config</directory>
-        <includes>
-          <include>oauth.json</include>
-          <include>oauth2.json</include>
-          <include>OSML_library.xml</include>
-          <include>gadget-admin.json</include>
-        </includes>
-      </resource>
-
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-      </resource>
-      <resource>
-        <!-- TODO: eliminate this inclusion -->
-        <!-- this is relative to the pom.xml directory -->
-        <directory>${basedir}/../../content/</directory>
-        <targetPath>files</targetPath>
-        <includes>
-          <include>xpc.swf</include>
-          <include>container/rpc_relay.html</include>
-          <include>container/cookiebaseduserprefstore.js</include>
-        </includes>
-      </resource>
-    </resources>
-    <pluginManagement>
-    	<plugins>
-    		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-    		<plugin>
-    			<groupId>org.eclipse.m2e</groupId>
-    			<artifactId>lifecycle-mapping</artifactId>
-    			<version>1.0.0</version>
-    			<configuration>
-    				<lifecycleMappingMetadata>
-    					<pluginExecutions>
-    						<pluginExecution>
-    							<pluginExecutionFilter>
-    								<groupId>org.codehaus.mojo</groupId>
-    								<artifactId>
-    									build-helper-maven-plugin
-    								</artifactId>
-    								<versionRange>[1.7,)</versionRange>
-    								<goals>
-    									<goal>add-source</goal>
-    								</goals>
-    							</pluginExecutionFilter>
-    							<action>
-    								<ignore />
-    							</action>
-    						</pluginExecution>
-    					</pluginExecutions>
-    				</lifecycleMappingMetadata>
-    			</configuration>
-    		</plugin>
-    	</plugins>
-    </pluginManagement>
-  </build>
-
-  <profiles>
-    <profile>
-      <id>reporting</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>clirr-maven-plugin</artifactId>
-            <configuration>
-              <comparisonVersion>${shindig.api.previous&gt;}</comparisonVersion>
-            </configuration>
-            <version>2.2.3</version>
-          </plugin>
-        </plugins>
-      </reporting>
-    </profile>
-  </profiles>
-
   <dependencies>
     <!-- project dependencies -->
     <dependency>
@@ -259,12 +173,6 @@
 
     <!-- test -->
     <dependency>
-      <groupId>org.apache.shindig</groupId>
-      <artifactId>shindig-common</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>diff_match_patch</groupId>
       <artifactId>diff_match_patch</artifactId>
       <scope>test</scope>
@@ -275,6 +183,11 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.shindig</groupId>
+      <artifactId>shindig-test</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -294,6 +207,10 @@
     <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
     </dependency>
   </dependencies>
 </project>

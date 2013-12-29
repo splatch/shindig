@@ -18,14 +18,14 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
+import static org.mockito.Mockito.*;
+
 import com.google.common.collect.Maps;
 import com.google.inject.Provider;
 
-import org.apache.shindig.auth.AbstractSecurityToken;
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.common.crypto.BasicBlobCrypter;
 import org.apache.shindig.common.crypto.BlobCrypter;
-import org.apache.shindig.common.crypto.BlobExpiredException;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.AuthType;
@@ -58,7 +58,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -151,75 +150,6 @@ public class MockUtils {
   static class DummyMessageProvider implements Provider<OAuth2Message> {
     public OAuth2Message get() {
       return new BasicOAuth2Message();
-    }
-  }
-
-  static class DummySecurityToken extends AbstractSecurityToken {
-
-    public DummySecurityToken(final String ownerId, final String viewerId, final String appUrl) {
-      this.setOwnerId(ownerId);
-      this.setViewerId(viewerId);
-      this.setAppUrl(appUrl);
-    }
-
-    @Override
-    public String getAppId() {
-      return "";
-    }
-
-    @Override
-    public String getDomain() {
-      return "";
-    }
-
-    @Override
-    public String getContainer() {
-      return "";
-    }
-
-    @Override
-    public long getModuleId() {
-      return 0;
-    }
-
-    @Override
-    public Long getExpiresAt() {
-      return 0L;
-    }
-
-    public boolean isExpired(final int maxAge) {
-      return false;
-    }
-
-    public AbstractSecurityToken enforceNotExpired(final int maxAge) throws BlobExpiredException {
-      return this;
-    }
-
-    public String getUpdatedToken() {
-      return "";
-    }
-
-    public String getAuthenticationMode() {
-      return "";
-    }
-
-    @Override
-    public String getTrustedJson() {
-      return "";
-    }
-
-    public boolean isAnonymous() {
-      return false;
-    }
-
-    @Override
-    public String getActiveUrl() {
-      return this.getAppUrl();
-    }
-
-    @Override
-    protected EnumSet<Keys> getMapKeys() {
-      return EnumSet.noneOf(Keys.class);
     }
   }
 
@@ -359,7 +289,11 @@ public class MockUtils {
 
   protected static SecurityToken getDummySecurityToken(final String ownerId, final String viewerId,
           final String appUrl) {
-    return new DummySecurityToken(ownerId, viewerId, appUrl);
+    SecurityToken mock = mock(SecurityToken.class);
+    when(mock.getOwnerId()).thenReturn(ownerId);
+    when(mock.getViewerId()).thenReturn(viewerId);
+    when(mock.getAppUrl()).thenReturn(appUrl);
+    return mock;
   }
 
   protected static OAuth2Store getDummyStore() throws Exception {

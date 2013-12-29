@@ -19,7 +19,7 @@
 package org.apache.shindig.gadgets.oauth;
 
 import org.apache.shindig.common.crypto.BlobCrypter;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.api.time.TimeSource;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;

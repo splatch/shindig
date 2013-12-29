@@ -21,7 +21,7 @@ package org.apache.shindig.social.opensocial.oauth;
 import net.oauth.OAuthConsumer;
 import net.oauth.OAuthProblemException;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 
 /**
  * A class that manages the OAuth data for Shindig, including

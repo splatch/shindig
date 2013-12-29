@@ -9,6 +9,14 @@ import java.io.InputStream;
 public interface ResourceLoader {
 
     /**
+     * Checks if resource loader can handle given path.
+     * 
+     * @param path Path to retrieve.
+     * @return True if implementation can open resource.
+     */
+    boolean accept(String path);
+
+    /**
      * Opens a given path as either a resource or a file, depending on the path
      * name.
      *

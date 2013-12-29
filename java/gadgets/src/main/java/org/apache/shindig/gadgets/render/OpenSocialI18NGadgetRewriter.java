@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.shindig.common.util.ResourceLoader;
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.common.xml.DomUtil;
 import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.GadgetException;
@@ -35,6 +35,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.google.inject.Inject;
+
 /**
  * Produce data constants that are needed by the opensocial-i18n
  * feature based on user locale.
@@ -42,7 +44,13 @@ import org.w3c.dom.Node;
 public class OpenSocialI18NGadgetRewriter implements GadgetRewriter {
   private static final String I18N_FEATURE_NAME = "opensocial-i18n";
   private static final String DATA_PATH = "features/i18n/data/";
+  private final ResourceLoader resourceLoader;
   private Map<Locale, String> i18nConstantsCache = new ConcurrentHashMap<Locale, String>();
+
+  @Inject
+  public OpenSocialI18NGadgetRewriter(ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
+  }
 
   public void rewrite(Gadget gadget, MutableContent mutableContent) throws RewritingException {
     // Don't touch sanitized gadgets.
@@ -122,6 +130,6 @@ public class OpenSocialI18NGadgetRewriter implements GadgetRewriter {
   }
 
   protected String attemptToLoadResourceFullyQualified(String resource) throws IOException {
-    return ResourceLoader.getContent(resource);
+    return resourceLoader.getContent(resource);
   }
 }

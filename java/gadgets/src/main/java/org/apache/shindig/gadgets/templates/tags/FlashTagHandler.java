@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.DomUtil;
 import org.apache.shindig.common.util.Utf8UrlCoder;
-import org.apache.shindig.common.JsonSerializer;
+import org.apache.shindig.api.json.JsonSerializer;
 import org.apache.shindig.gadgets.features.FeatureRegistry;
 import org.apache.shindig.gadgets.features.FeatureResource;
 import org.apache.shindig.gadgets.render.SanitizingGadgetRewriter;
@@ -62,14 +62,16 @@ public class FlashTagHandler extends AbstractTagHandler {
    */
   final AtomicLong idGenerator = new AtomicLong();
   private static final String ALT_CONTENT_PREFIX = "os_xFlash_alt_";
+  private final JsonSerializer serializer;
 
   @Inject
-  public FlashTagHandler(BeanJsonConverter beanConverter, FeatureRegistry featureRegistry,
+  public FlashTagHandler(BeanJsonConverter beanConverter, FeatureRegistry featureRegistry, JsonSerializer serializer,
       @Named("shindig.template-rewrite.extension-tag-namespace") String namespace,
       @Named("shindig.flash.min-version") String flashMinVersion) {
     super(namespace, TAG_NAME);
     this.beanConverter = beanConverter;
     this.featureRegistry = featureRegistry;
+    this.serializer = serializer;
     this.flashMinVersion = flashMinVersion;
   }
 
@@ -146,18 +148,18 @@ public class FlashTagHandler extends AbstractTagHandler {
     try {
       StringBuilder builder = new StringBuilder();
       builder.append("swfobject.embedSWF(");
-      JsonSerializer.appendString(builder, config.swf.toString());
+      serializer.append(builder, config.swf.toString());
       builder.append(",\"");
       builder.append(altContentId);
       builder.append("\",");
-      JsonSerializer.appendString(builder, config.width);
+      serializer.append(builder, config.width);
       builder.append(',');
-      JsonSerializer.appendString(builder, config.height);
+      serializer.append(builder, config.height);
       builder.append(",\"").append(flashMinVersion).append("\",");
       builder.append("null,null,");
-      JsonSerializer.appendMap(builder, config.getParams());
+      serializer.append(builder, config.getParams());
       builder.append(',');
-      JsonSerializer.appendMap(builder, config.getAttributes());
+      serializer.append(builder, config.getAttributes());
       builder.append(");");
       return builder.toString();
     } catch (IOException ioe) {

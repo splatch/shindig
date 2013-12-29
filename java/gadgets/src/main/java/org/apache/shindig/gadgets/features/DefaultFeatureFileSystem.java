@@ -18,19 +18,26 @@
  */
 package org.apache.shindig.gadgets.features;
 
-import org.apache.shindig.common.util.ResourceLoader;
-
 import java.io.IOException;
+
+import org.apache.shindig.api.io.ResourceLoader;
 
 /**
  * Default file system class that generate default file objects
  */
 public class DefaultFeatureFileSystem implements FeatureFileSystem {
+
+  private final ResourceLoader resourceLoader;
+
+  public DefaultFeatureFileSystem(ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
+  }
+
   public FeatureFile getFile(String path) {
-    return new DefaultFeatureFile(path);
+    return new DefaultFeatureFile(path, resourceLoader);
   }
 
   public String getResourceContent(String resource) throws IOException {
-    return ResourceLoader.getContent(resource);
+    return resourceLoader.getContent(resource);
   }
 }

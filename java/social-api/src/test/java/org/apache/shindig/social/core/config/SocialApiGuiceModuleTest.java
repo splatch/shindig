@@ -18,6 +18,8 @@
  */
 package org.apache.shindig.social.core.config;
 
+import static org.junit.Assert.*;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -26,28 +28,35 @@ import com.google.inject.TypeLiteral;
 
 import org.apache.shindig.auth.AuthenticationHandler;
 import org.apache.shindig.common.PropertiesModule;
+import org.apache.shindig.common.cache.DefaultCacheModule;
 import org.apache.shindig.social.core.oauth.AuthenticationHandlerProvider;
 import org.apache.shindig.social.core.oauth2.OAuth2Service;
-import org.apache.shindig.social.core.oauth2.OAuth2ServiceImpl;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
-import org.easymock.EasyMock;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.List;
 
-public class SocialApiGuiceModuleTest extends Assert {
+@RunWith(MockitoJUnitRunner.class)
+public class SocialApiGuiceModuleTest {
   private Injector injector;
+
+  @Mock
+  private OAuthDataStore store;
+  @Mock
+  private OAuth2Service service;
 
   @Before
   public void setUp() throws Exception {
-    injector = Guice.createInjector(new SocialApiGuiceModule(), new PropertiesModule(),
+    injector = Guice.createInjector(new SocialApiGuiceModule(), new DefaultCacheModule(), new PropertiesModule(),
         new AbstractModule() {
           @Override
           protected void configure() {
-            bind(OAuthDataStore.class).toInstance(EasyMock.createMock(OAuthDataStore.class));
-            bind(OAuth2Service.class).toInstance(EasyMock.createMock(OAuth2ServiceImpl.class));
+            bind(OAuthDataStore.class).toInstance(store);
+            bind(OAuth2Service.class).toInstance(service);
           }
     });
   }

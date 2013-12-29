@@ -18,20 +18,38 @@
  */
 package org.apache.shindig.gadgets.variables;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import org.apache.shindig.gadgets.variables.Substitutions.Type;
 
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetContext;
-import org.apache.shindig.gadgets.render.FakeMessageBundleFactory;
+import org.apache.shindig.gadgets.MessageBundleFactory;
 import org.apache.shindig.gadgets.spec.GadgetSpec;
-import org.junit.Assert;
+import org.apache.shindig.gadgets.spec.MessageBundle;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-public class MessageSubstituterTest extends Assert {
-  private final FakeMessageBundleFactory messageBundleFactory = new FakeMessageBundleFactory();
-  private final MessageSubstituter substituter = new MessageSubstituter(messageBundleFactory);
+import com.google.common.collect.ImmutableMap;
+
+@RunWith(MockitoJUnitRunner.class)
+public class MessageSubstituterTest {
+
+  private static final String FOO_PROP = "foo";
+  private static final String FOO_VALUE = "bar";
+  private static final String BAR_PROP = "bar";
+  private static final String BAR_VALUE = "baz";
 
   private final GadgetContext context = new GadgetContext();
+
+  @Mock
+  private MessageBundleFactory messageBundleFactory;
+
+  @Mock
+  private MessageBundle bundle;
 
   @Test
   public void testMessageReplacements() throws Exception {
@@ -47,9 +65,19 @@ public class MessageSubstituterTest extends Assert {
         "</Module>";
 
     Substitutions substitutions = new Substitutions();
-    substituter.addSubstitutions(substitutions, context, new GadgetSpec(Uri.parse("#"), xml));
+    GadgetSpec spec = new GadgetSpec(Uri.parse("#"), xml);
+    when(messageBundleFactory.getBundle(spec, context.getLocale(), context.getIgnoreCache(), context.getContainer(), context.getView())).thenReturn(bundle);
+    when(bundle.getMessages()).thenReturn(new ImmutableMap.Builder<String, String>()
+      .put(FOO_PROP, FOO_VALUE)
+      .put(BAR_PROP, BAR_VALUE)
+      .build()
+    );
 
-    assertEquals("bar", substitutions.getSubstitution(Type.MESSAGE, "foo"));
-    assertEquals("baz", substitutions.getSubstitution(Type.MESSAGE, "bar"));
+    MessageSubstituter substituter = new MessageSubstituter(messageBundleFactory);
+    substituter.addSubstitutions(substitutions, context, spec);
+
+
+    assertEquals(FOO_VALUE, substitutions.getSubstitution(Type.MESSAGE, FOO_PROP));
+    assertEquals(BAR_VALUE, substitutions.getSubstitution(Type.MESSAGE, BAR_PROP));
   }
 }

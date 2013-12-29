@@ -34,8 +34,9 @@ import com.google.common.collect.Maps;
 import org.apache.shindig.common.Pair;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.uri.UriBuilder;
+import org.apache.shindig.common.util.DefaultResourceLoader;
 import org.apache.shindig.common.util.FakeTimeSource;
-import org.apache.shindig.common.util.TimeSource;
+import org.apache.shindig.api.time.TimeSource;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.http.HttpRequest;
@@ -90,7 +91,7 @@ public class FeatureResourceLoaderTest {
     fetcher = createMock(HttpFetcher.class);
     timeSource = new FakeTimeSource();
     timeSource.setCurrentTimeMillis(0);
-    loader = new TestFeatureResourceLoader(fetcher, timeSource, new DefaultFeatureFileSystem());
+    loader = new TestFeatureResourceLoader(fetcher, timeSource, new DefaultFeatureFileSystem(new DefaultResourceLoader()));
   }
 
   @Test
@@ -250,7 +251,7 @@ public class FeatureResourceLoaderTest {
     Map<String, String> attribs = Maps.newHashMap();
     attribs.put( "inline", "true" );
     CapturingHttpFetcher fetcher = new CapturingHttpFetcher();
-    FeatureResourceLoader frLoader = new TestFeatureResourceLoader(fetcher, timeSource, new DefaultFeatureFileSystem());
+    FeatureResourceLoader frLoader = new TestFeatureResourceLoader(fetcher, timeSource, new DefaultFeatureFileSystem(new DefaultResourceLoader()));
     FeatureResource resource = frLoader.load(uri, attribs);
     assertEquals(URL_JS, resource.getContent());
     assertNotNull( fetcher.request );

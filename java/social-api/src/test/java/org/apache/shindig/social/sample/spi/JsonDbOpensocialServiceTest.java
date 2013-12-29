@@ -18,13 +18,14 @@
  */
 package org.apache.shindig.social.sample.spi;
 
+import static org.junit.Assert.*;
+
 import java.util.Collections;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.auth.AnonymousSecurityToken;
-import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.common.testing.FakeGadgetToken;
 import org.apache.shindig.protocol.DataCollection;
 import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RestfulCollection;
@@ -54,7 +55,7 @@ import com.google.inject.Injector;
 /**
  * Test the JSONOpensocialService
  */
-public class JsonDbOpensocialServiceTest extends Assert {
+public class JsonDbOpensocialServiceTest {
   private JsonDbOpensocialService db;
 
   private static final UserId CANON_USER = new UserId(UserId.Type.userId, "canonical");
@@ -66,7 +67,7 @@ public class JsonDbOpensocialServiceTest extends Assert {
   private static final String APP_ID = "1";
   private static final String CANONICAL_USER_ID = "canonical";
 
-  private SecurityToken token = new FakeGadgetToken();
+  private SecurityToken token;
 
   @Before
   public void setUp() throws Exception {

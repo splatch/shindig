@@ -18,10 +18,12 @@
  */
 package org.apache.shindig.gadgets.preload;
 
-import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.common.testing.FakeGadgetToken;
+import org.apache.shindig.api.auth.SecurityToken;
+import org.apache.shindig.common.DefaultJsonSerializer;
+import org.apache.shindig.common.JsonAssert;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetContext;
+import org.mockito.Mockito;
 
 import com.google.common.collect.Maps;
 
@@ -30,7 +32,7 @@ import java.util.Map;
 /**
  * Base code for the preloader tests.
  */
-public class PreloaderTestFixture {
+public class PreloaderTestFixture extends JsonAssert {
   protected static final Uri GADGET_URL = Uri.parse("http://example.org/gadget.xml");
   protected static final String CONTAINER = "some-container";
   protected static final String HOST = "example.org";
@@ -41,7 +43,7 @@ public class PreloaderTestFixture {
   public final GadgetContext context = new GadgetContext() {
     @Override
     public SecurityToken getToken() {
-      return new FakeGadgetToken();
+      return Mockito.mock(SecurityToken.class);
     }
 
     @Override
@@ -74,4 +76,9 @@ public class PreloaderTestFixture {
       return ignoreCache;
     }
   };
+
+  public PreloaderTestFixture() {
+    super(new DefaultJsonSerializer());
+  }
+
 }

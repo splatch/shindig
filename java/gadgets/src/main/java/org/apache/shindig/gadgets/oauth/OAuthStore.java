@@ -18,7 +18,7 @@
  */
 package org.apache.shindig.gadgets.oauth;
 
-import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.api.auth.SecurityToken;
 import org.apache.shindig.gadgets.GadgetException;
 
 import net.oauth.OAuthConsumer;

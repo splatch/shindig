@@ -23,9 +23,12 @@ import java.util.Set;
 
 import net.oauth.OAuthValidator;
 
-import org.apache.shindig.auth.AnonymousAuthenticationHandler;
+import org.apache.shindig.api.auth.SecurityTokenCodec;
+import org.apache.shindig.api.io.ResourceLoader;
 import org.apache.shindig.auth.AuthenticationHandler;
+import org.apache.shindig.auth.DefaultSecurityTokenCodec;
 import org.apache.shindig.common.servlet.ParameterFetcher;
+import org.apache.shindig.common.util.DefaultResourceLoader;
 import org.apache.shindig.protocol.DataServiceServletFetcher;
 import org.apache.shindig.protocol.conversion.BeanConverter;
 import org.apache.shindig.protocol.conversion.BeanJsonConverter;
@@ -83,6 +86,8 @@ public class SocialApiGuiceModule extends AbstractModule {
     }
 
     bind(OAuthValidator.class).toProvider(OAuthValidatorProvider.class).in(Singleton.class);
+    bind(SecurityTokenCodec.class).to(DefaultSecurityTokenCodec.class).in(Singleton.class);
+    bind(ResourceLoader.class).to(DefaultResourceLoader.class).in(Singleton.class);
   }
 
   /**

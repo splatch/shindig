@@ -22,12 +22,8 @@ import static org.apache.shindig.gadgets.render.RenderingGadgetRewriter.DEFAULT_
 import static org.apache.shindig.gadgets.render.RenderingGadgetRewriter.FEATURES_KEY;
 import static org.apache.shindig.gadgets.render.RenderingGadgetRewriter.INSERT_BASE_ELEMENT_KEY;
 import static org.apache.shindig.gadgets.render.RenderingGadgetRewriter.IS_GADGET_BEACON;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.getCurrentArguments;
-import static org.easymock.EasyMock.isA;
-import static org.easymock.EasyMock.same;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,9 +33,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.shindig.common.DefaultJsonSerializer;
 import org.apache.shindig.common.EasyMockTestCase;
 import org.apache.shindig.common.JsonAssert;
 import org.apache.shindig.common.PropertiesModule;
+import org.apache.shindig.common.cache.DefaultCacheModule;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlUtil;
 import org.apache.shindig.config.BasicContainerConfig;
@@ -47,12 +45,14 @@ import org.apache.shindig.expressions.Expressions;
 import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.apache.shindig.gadgets.GadgetException;
+import org.apache.shindig.gadgets.MessageBundleFactory;
 import org.apache.shindig.gadgets.admin.GadgetAdminStore;
 import org.apache.shindig.gadgets.config.ConfigContributor;
 import org.apache.shindig.gadgets.config.CoreUtilConfigContributor;
 import org.apache.shindig.gadgets.config.DefaultConfigProcessor;
 import org.apache.shindig.gadgets.config.XhrwrapperConfigContributor;
 import org.apache.shindig.gadgets.features.FeatureRegistry;
+import org.apache.shindig.gadgets.features.FeatureRegistry.LookupResult;
 import org.apache.shindig.gadgets.features.FeatureRegistryProvider;
 import org.apache.shindig.gadgets.features.FeatureResource;
 import org.apache.shindig.gadgets.js.JsException;
@@ -76,6 +76,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -91,7 +96,8 @@ import com.google.inject.Injector;
 /**
  * Tests for RenderingContentRewriter.
  */
-public class RenderingGadgetRewriterTest extends EasyMockTestCase{
+@RunWith(MockitoJUnitRunner.class)
+public class RenderingGadgetRewriterTest extends JsonAssert {
   private static final Uri SPEC_URL = Uri.parse("http://example.org/gadget.xml");
   private static final String BODY_CONTENT = "Some body content";
   static final Pattern DOCUMENT_SPLIT_PATTERN = Pattern.compile(
@@ -107,11 +113,13 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
   static final int BODY_ATTRIBUTES_GROUP = 3;
   static final int BODY_GROUP = 4;
 
-  private final FakeMessageBundleFactory messageBundleFactory = new FakeMessageBundleFactory();
+  @Mock
+  private MessageBundleFactory messageBundleFactory;
   private final FakeContainerConfig config = new FakeContainerConfig();
   private final JsUriManager jsUriManager = new FakeJsUriManager();
   private final MapGadgetContext context = new MapGadgetContext();
-  private final GadgetAdminStore gadgetAdminStore = mock(GadgetAdminStore.class);
+  @Mock
+  private GadgetAdminStore gadgetAdminStore;
 
   private FeatureRegistry featureRegistry;
   private JsServingPipeline jsServingPipeline;
@@ -119,16 +127,20 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
   private GadgetHtmlParser parser;
   private Expressions expressions;
 
+  public RenderingGadgetRewriterTest() {
+    super(new DefaultJsonSerializer());
+  }
+
   @Before
   public void setUp() throws Exception {
     expressions = Expressions.forTesting();
-    featureRegistry = createMock(FeatureRegistry.class);
+    featureRegistry = mock(FeatureRegistry.class);
     FeatureRegistryProvider featureRegistryProvider = new FeatureRegistryProvider() {
       public FeatureRegistry get(String repository) {
         return featureRegistry;
       }
     };
-    jsServingPipeline = createMock(JsServingPipeline.class);
+    jsServingPipeline = mock(JsServingPipeline.class);
     Map<String, ConfigContributor> configContributors = ImmutableMap.<String, ConfigContributor>of(
         "core.util", new CoreUtilConfigContributor(featureRegistry,
                 gadgetAdminStore),
@@ -137,8 +149,8 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     rewriter
         = new RenderingGadgetRewriter(messageBundleFactory, expressions, config, featureRegistryProvider,
             jsServingPipeline, jsUriManager,
-            new DefaultConfigProcessor(configContributors, config), gadgetAdminStore);
-    Injector injector = Guice.createInjector(new ParseModule(), new PropertiesModule());
+            new DefaultConfigProcessor(configContributors, config), gadgetAdminStore, new DefaultJsonSerializer());
+    Injector injector = Guice.createInjector(new ParseModule(), new DefaultCacheModule(), new PropertiesModule());
     parser = injector.getInstance(GadgetHtmlParser.class);
   }
 
@@ -159,11 +171,9 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
         ImmutableList.<FeatureResource>of());
 
     //Convenience: by default expect that the gadget is allowed to render
-    reset(gadgetAdminStore);
-    expect(gadgetAdminStore.checkFeatureAdminInfo(isA(Gadget.class))).andReturn(true);
-    expect(gadgetAdminStore.isAllowedFeature(isA(Feature.class), isA(Gadget.class)))
-    .andReturn(true).anyTimes();
-    replay(gadgetAdminStore);
+    when(gadgetAdminStore.checkFeatureAdminInfo(isA(Gadget.class))).thenReturn(true);
+    when(gadgetAdminStore.isAllowedFeature(isA(Feature.class), isA(Gadget.class)))
+    .thenReturn(true);
     return gadget;
   }
 
@@ -617,8 +627,8 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
   public void exceptionWhenFeatureNotAllowed() throws Exception {
     Gadget gadget = makeDefaultGadget();
     reset(gadgetAdminStore);
-    expect(gadgetAdminStore.checkFeatureAdminInfo(isA(Gadget.class))).andReturn(false);
-    replay(gadgetAdminStore);
+    when(gadgetAdminStore.checkFeatureAdminInfo(isA(Gadget.class))).thenReturn(false);
+
     rewrite(gadget, BODY_CONTENT);
   }
 
@@ -689,10 +699,9 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     Gadget gadget = makeGadgetWithSpec(gadgetXml).setContext(context);
     reset(gadgetAdminStore);
     Feature denied = mock(Feature.class);
-    expect(denied.getName()).andReturn("hello");
-    expect(gadgetAdminStore.checkFeatureAdminInfo(isA(Gadget.class))).andReturn(true);
-    expect(gadgetAdminStore.isAllowedFeature(eq(denied), isA(Gadget.class))).andReturn(false);
-    replay();
+    when(denied.getName()).thenReturn("hello");
+    when(gadgetAdminStore.checkFeatureAdminInfo(isA(Gadget.class))).thenReturn(true);
+    when(gadgetAdminStore.isAllowedFeature(eq(denied), isA(Gadget.class))).thenReturn(false);
 
     FeatureResource fooResource = inline("foo-content", "foo-debug");
     expectFeatureCalls(gadget,
@@ -815,8 +824,7 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     JSONObject foo = util.getJSONObject("foo");
     assertEquals("baz", foo.get("bar"));
     JSONObject foo2 = util.getJSONObject("foo2");
-    JsonAssert.assertObjectEquals(ImmutableList.of("baz", "bop"),
-        foo2.get("bar"));
+    assertObjectEquals(ImmutableList.of("baz", "bop"), foo2.get("bar"));
 
     assertTrue(!util.has("unsupported"));
   }
@@ -933,7 +941,8 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     JSONObject config = new JSONObject(configJson);
     JSONObject xhrConfig = config.getJSONObject("shindig.xhrwrapper");
     JSONObject expectedJson = new JSONObject(expected);
-    JsonAssert.assertJsonObjectEquals(xhrConfig, expectedJson);
+
+    assertJsonObjectEquals(xhrConfig, expectedJson);
   }
 
   @Test
@@ -964,31 +973,41 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     Gadget gadget = makeGadgetWithSpec(gadgetXml);
 
     reset(featureRegistry);
-    FeatureRegistry.LookupResult lr = createMock(FeatureRegistry.LookupResult.class);
-    expect(lr.getResources()).andReturn(ImmutableList.<FeatureResource>of());
-    replay(lr);
-    expect(featureRegistry.getFeatureResources(same(gadget.getContext()),
+    FeatureRegistry.LookupResult lr = mock(FeatureRegistry.LookupResult.class);
+    when(lr.getResources()).thenReturn(ImmutableList.<FeatureResource>of());
+
+    when(featureRegistry.getFeatureResources(same(gadget.getContext()),
         eq(ImmutableSet.<String>of()), eq(Lists.<String>newLinkedList())))
-        .andReturn(lr);
-    final FeatureRegistry.LookupResult lr2 = createMock(FeatureRegistry.LookupResult.class);
-    expect(lr2.getResources()).andReturn(ImmutableList.<FeatureResource>of());
-    replay(lr2);
+        .thenReturn(lr);
+    final FeatureRegistry.LookupResult lr2 = mock(FeatureRegistry.LookupResult.class);
+    when(lr2.getResources()).thenReturn(ImmutableList.<FeatureResource>of());
+
     assertTrue(gadget.getDirectFeatureDeps().contains("core"));
     assertTrue(gadget.getDirectFeatureDeps().contains("foo"));
     assertEquals(gadget.getDirectFeatureDeps().size(),2);
-    expect(featureRegistry.getFeatureResources(same(gadget.getContext()),
+    when(featureRegistry.getFeatureResources(same(gadget.getContext()),
         eq(Lists.newLinkedList(gadget.getDirectFeatureDeps())), eq(Lists.<String>newLinkedList())))
-        .andAnswer(new IAnswer<FeatureRegistry.LookupResult>() {
-          @SuppressWarnings("unchecked")
-          public FeatureRegistry.LookupResult answer() throws Throwable {
-            List<String> unsupported = (List<String>)getCurrentArguments()[2];
-            unsupported.add("foo");
-            return lr2;
-          }
-        });
-    replay(featureRegistry);
+        .thenAnswer(new FeatureResourcesAnswer(lr2, "foo"));
 
     rewrite(gadget, "");
+  }
+
+  static class FeatureResourcesAnswer implements Answer<FeatureRegistry.LookupResult> {
+    private final LookupResult result;
+    private final List<String> unsupported;
+
+    public FeatureResourcesAnswer(LookupResult result, String ... unsupported) {
+        this.result = result;
+        this.unsupported = Arrays.asList(unsupported);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public LookupResult answer(InvocationOnMock invocation) throws Throwable {
+      List<String> unsupported = (List<String>) invocation.getArguments()[2];
+      unsupported.addAll(unsupported);
+      return result;
+    }
   }
 
   @Test(expected = RewritingException.class)
@@ -1003,30 +1022,22 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     Gadget gadget = makeGadgetWithSpec(gadgetXml);
 
     reset(featureRegistry);
-    FeatureRegistry.LookupResult lr = createMock(FeatureRegistry.LookupResult.class);
-    expect(lr.getResources()).andReturn(ImmutableList.<FeatureResource>of());
-    replay(lr);
-    expect(featureRegistry.getFeatureResources(same(gadget.getContext()),
+    FeatureRegistry.LookupResult lr = mock(FeatureRegistry.LookupResult.class);
+    when(lr.getResources()).thenReturn(ImmutableList.<FeatureResource>of());
+
+    when(featureRegistry.getFeatureResources(same(gadget.getContext()),
         eq(ImmutableSet.<String>of()), eq(Lists.<String>newLinkedList())))
-        .andReturn(lr);
-    final FeatureRegistry.LookupResult lr2 = createMock(FeatureRegistry.LookupResult.class);
-    expect(lr2.getResources()).andReturn(ImmutableList.<FeatureResource>of());
-    replay(lr2);
+        .thenReturn(lr);
+    final FeatureRegistry.LookupResult lr2 = mock(FeatureRegistry.LookupResult.class);
+    when(lr2.getResources()).thenReturn(ImmutableList.<FeatureResource>of());
+
     assertTrue(gadget.getDirectFeatureDeps().contains("core"));
     assertTrue(gadget.getDirectFeatureDeps().contains("foo"));
     assertEquals(gadget.getDirectFeatureDeps().size(),2);
     Lists.newLinkedList();
-    expect(featureRegistry.getFeatureResources(same(gadget.getContext()),
+    when(featureRegistry.getFeatureResources(same(gadget.getContext()),
         eq(Lists.newLinkedList(gadget.getDirectFeatureDeps())), eq(Lists.<String>newLinkedList())))
-        .andAnswer(new IAnswer<FeatureRegistry.LookupResult>() {
-          @SuppressWarnings("unchecked")
-          public FeatureRegistry.LookupResult answer() throws Throwable {
-            List<String> unsupported = (List<String>)getCurrentArguments()[2];
-            unsupported.add("foo");
-            return lr2;
-          }
-        });
-    replay(featureRegistry);
+        .thenAnswer(new FeatureResourcesAnswer(lr2, "foo"));
 
     rewrite(gadget, "");
   }
@@ -1052,27 +1063,19 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     Gadget gadget = makeGadgetWithSpec(gadgetXml).setContext(context);
 
     reset(featureRegistry);
-    final FeatureRegistry.LookupResult lr = createMock(FeatureRegistry.LookupResult.class);
-    expect(lr.getResources()).andReturn(ImmutableList.<FeatureResource>of()).anyTimes();
-    replay(lr);
-    expect(featureRegistry.getFeatureResources(same(gadget.getContext()),
+    final FeatureRegistry.LookupResult lr = mock(FeatureRegistry.LookupResult.class);
+    when(lr.getResources()).thenReturn(ImmutableList.<FeatureResource>of());
+
+    when(featureRegistry.getFeatureResources(same(gadget.getContext()),
         eq(ImmutableSet.<String>of("bar")), eq(Lists.<String>newArrayList())))
-        .andAnswer(new IAnswer<FeatureRegistry.LookupResult>() {
-          @SuppressWarnings("unchecked")
-          public FeatureRegistry.LookupResult answer() throws Throwable {
-            List<String> unsupported = (List<String>)getCurrentArguments()[2];
-            unsupported.add("bar");
-            return lr;
-          }
-        });
-    expect(featureRegistry.getFeatureResources(same(gadget.getContext()),
+        .thenAnswer(new FeatureResourcesAnswer(lr, "bar"));
+    when(featureRegistry.getFeatureResources(same(gadget.getContext()),
         eq(ImmutableList.<String>of("core")), eq(Lists.<String>newArrayList())))
-        .andReturn(lr);
-    expect(featureRegistry.getFeatures(eq(ImmutableSet.of("core", "bar"))))
-        .andReturn(ImmutableList.of("core"));
-    expect(featureRegistry.getFeatures(eq(ImmutableList.of("core"))))
-        .andReturn(ImmutableList.of("core"));
-    replay(featureRegistry);
+        .thenReturn(lr);
+    when(featureRegistry.getFeatures(eq(ImmutableSet.of("core", "bar"))))
+        .thenReturn(ImmutableList.of("core"));
+    when(featureRegistry.getFeatures(eq(ImmutableList.of("core"))))
+        .thenReturn(ImmutableList.of("core"));
 
     rewrite(gadget, "");
   }
@@ -1267,34 +1270,33 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     List<String> allRequiredFeatuesAndLibs = Lists.newLinkedList(allRequiredFeatures);
     allRequiredFeatuesAndLibs.addAll(externLibs);
     List<String> emptyList = Lists.newLinkedList();
-    final FeatureRegistry.LookupResult externLr = createMock(FeatureRegistry.LookupResult.class);
-    expect(externLr.getResources()).andReturn(externResources);
-    replay(externLr);
-    final FeatureRegistry.LookupResult gadgetLr = createMock(FeatureRegistry.LookupResult.class);
-    expect(gadgetLr.getResources()).andReturn(gadgetResources);
-    replay(gadgetLr);
-    expect(featureRegistry.getFeatureResources(same(gadgetContext), eq(externLibs), eq(emptyList)))
-        .andReturn(externLr);
-    expect(featureRegistry.getFeatureResources(same(gadgetContext), eq(gadgetFeatures),
-        eq(emptyList))).andReturn(gadgetLr);
-    expect(featureRegistry.getFeatures(eq(allFeatures)))
-        .andReturn(allFeatures).anyTimes();
-    expect(featureRegistry.getFeatures(eq(Sets.newHashSet(allFeaturesAndLibs))))
-        .andReturn(allFeaturesAndLibs);
-    expect(featureRegistry.getFeatures(eq(ImmutableSet.of("*"))))
-    .andReturn(ImmutableList.<String>of()).anyTimes();
-    expect(featureRegistry.getFeatures(eq(ImmutableSet.of("hello"))))
-    .andReturn(ImmutableList.<String>of("hello")).anyTimes();
+    final FeatureRegistry.LookupResult externLr = mock(FeatureRegistry.LookupResult.class);
+    when(externLr.getResources()).thenReturn(externResources);
+
+    final FeatureRegistry.LookupResult gadgetLr = mock(FeatureRegistry.LookupResult.class);
+    when(gadgetLr.getResources()).thenReturn(gadgetResources);
+
+    when(featureRegistry.getFeatureResources(same(gadgetContext), eq(externLibs), eq(emptyList)))
+        .thenReturn(externLr);
+    when(featureRegistry.getFeatureResources(same(gadgetContext), eq(gadgetFeatures),
+        eq(emptyList))).thenReturn(gadgetLr);
+    when(featureRegistry.getFeatures(eq(allFeatures)))
+        .thenReturn(allFeatures);
+    when(featureRegistry.getFeatures(eq(Sets.newHashSet(allFeaturesAndLibs))))
+        .thenReturn(allFeaturesAndLibs);
+    when(featureRegistry.getFeatures(eq(ImmutableSet.of("*"))))
+    .thenReturn(ImmutableList.<String>of());
+    when(featureRegistry.getFeatures(eq(ImmutableSet.of("hello"))))
+    .thenReturn(ImmutableList.<String>of("hello"));
     if(!allRequiredFeatures.equals(allFeatures)) {
-      expect(featureRegistry.getFeatures(eq(allRequiredFeatures)))
-      .andReturn(allRequiredFeatuesAndLibs).anyTimes();
-      expect(featureRegistry.getFeatures(eq(Sets.newHashSet(allRequiredFeatuesAndLibs))))
-      .andReturn(allRequiredFeatuesAndLibs).anyTimes();
+      when(featureRegistry.getFeatures(eq(allRequiredFeatures)))
+      .thenReturn(allRequiredFeatuesAndLibs);
+      when(featureRegistry.getFeatures(eq(Sets.newHashSet(allRequiredFeatuesAndLibs))))
+      .thenReturn(allRequiredFeatuesAndLibs);
     }
     // Add CoreUtilConfigContributor behavior
-    expect(featureRegistry.getAllFeatureNames()).
-        andReturn(ImmutableSet.of("foo", "foo2", "core.util")).anyTimes();
-    replay(featureRegistry);
+    when(featureRegistry.getAllFeatureNames()).
+        thenReturn(ImmutableSet.of("foo", "foo2", "core.util"));
 
     JsResponseBuilder builder = new JsResponseBuilder();
     for (FeatureResource r :  gadgetResources) {
@@ -1306,11 +1308,10 @@ public class RenderingGadgetRewriterTest extends EasyMockTestCase{
     }
     reset(jsServingPipeline);
     try {
-      expect(jsServingPipeline.execute(EasyMock.<JsRequest>anyObject())).andReturn(builder.build());
+      when(jsServingPipeline.execute(EasyMock.<JsRequest>anyObject())).thenReturn(builder.build());
     } catch (JsException e) {
       throw new RuntimeException("Should not fail here");
     }
-    replay(jsServingPipeline);
   }
 
   private FeatureResource inline(String content, String debugContent) {
