@@ -28,10 +28,14 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.shindig.api.io.ResourceLoader;
+import org.apache.shindig.api.time.TimeSource;
 import org.apache.shindig.common.crypto.BasicBlobCrypter;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.common.servlet.BasicAuthority;
 import org.apache.shindig.common.servlet.GuiceServletContextListener;
+import org.apache.shindig.common.util.DefaultResourceLoader;
+import org.apache.shindig.common.util.DefaultTimeSource;
 import org.apache.shindig.common.util.GenericDigestUtils;
 import org.apache.shindig.gadgets.config.DefaultConfigContributorModule;
 import org.apache.shindig.gadgets.http.AbstractHttpCache;
@@ -76,6 +80,9 @@ public class DefaultGuiceModule extends AbstractModule {
     bind(Executor.class).annotatedWith(Names.named("shindig.concat.executor")).to(ShindigExecutorService.class);
 
     bind(Authority.class).to(BasicAuthority.class);
+
+    bind(TimeSource.class).to(DefaultTimeSource.class).in(Singleton.class);
+    bind(ResourceLoader.class).to(DefaultResourceLoader.class).in(Singleton.class);
 
     bindConstant().annotatedWith(Names.named("shindig.jsload.ttl-secs")).to(60 * 60); // 1 hour
     bindConstant().annotatedWith(Names.named("shindig.jsload.require-onload-with-jsload")).to(true);

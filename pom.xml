@@ -41,6 +41,8 @@
   <inceptionYear>2007</inceptionYear>
 
   <properties>
+    <cxf.version>2.7.3</cxf.version>
+
     <!-- What version of the API are we targeting for compatible -->
     <shindig.api.compatible>2.5.0</shindig.api.compatible>
     <!-- What version of the API did we ship last -->
@@ -504,6 +506,8 @@
   </developers>
 
   <modules>
+    <module>config</module>
+    <module>content</module>
     <module>features</module>
     <module>java/api</module>
     <module>java/test</module>
@@ -514,6 +518,7 @@
     <module>java/sample-container</module>
     <module>java/sample-maven-archetype</module>
     <module>java/server</module>
+    <module>java/cxf</module>
     <module>extras</module>
   </modules>
 
@@ -1810,6 +1815,22 @@
         <artifactId>servlet-api</artifactId>
         <version>2.5</version>
         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+        <version>${cxf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-rt-transports-http</artifactId>
+        <version>${cxf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-rt-transports-local</artifactId>
+        <version>${cxf.version}</version>
       </dependency>
 
       <!-- Test dependencies -->

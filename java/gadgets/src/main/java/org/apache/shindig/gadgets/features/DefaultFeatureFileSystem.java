@@ -22,6 +22,8 @@ import java.io.IOException;
 
 import org.apache.shindig.api.io.ResourceLoader;
 
+import com.google.inject.Inject;
+
 /**
  * Default file system class that generate default file objects
  */
@@ -29,6 +31,7 @@ public class DefaultFeatureFileSystem implements FeatureFileSystem {
 
   private final ResourceLoader resourceLoader;
 
+  @Inject
   public DefaultFeatureFileSystem(ResourceLoader resourceLoader) {
     this.resourceLoader = resourceLoader;
   }

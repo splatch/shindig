@@ -31,6 +31,7 @@
     <param-name>guice-modules</param-name>
     <param-value>
       org.apache.shindig.common.PropertiesModule:
+      org.apache.shindig.common.DefaultJsonModule:
       org.apache.shindig.gadgets.DefaultGuiceModule:
       org.apache.shindig.social.core.config.SocialApiGuiceModule:
       org.apache.shindig.social.sample.SampleModule:
@@ -39,7 +40,7 @@
       org.apache.shindig.gadgets.oauth2.OAuth2MessageModule:
       org.apache.shindig.gadgets.oauth2.handler.OAuth2HandlerModule: 
       org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule:
-      org.apache.shindig.common.cache.ehcache.EhCacheModule:
+      org.apache.shindig.ehcache.EhCacheModule:
       org.apache.shindig.sample.shiro.ShiroGuiceModule:
       org.apache.shindig.sample.container.SampleContainerGuiceModule:
       org.apache.shindig.extras.ShindigExtrasGuiceModule:
@@ -158,6 +159,10 @@
     <filter-name>etagFilter</filter-name>
     <url-pattern>*</url-pattern>
   </filter-mapping>
+
+  <listener>
+    <listener-class>org.apache.shindig.server.Slf4jContextListener</listener-class>
+  </listener>
 
   <listener>
     <listener-class>org.apache.shindig.common.servlet.GuiceServletContextListener</listener-class>
