@@ -132,7 +132,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
     return moduleId;
   }
 
-  public AbstractSecurityToken setModuleId(long moduleId) {
+  public AbstractSecurityToken setModuleId(Long moduleId) {
     this.moduleId = moduleId;
     return this;
   }
@@ -168,7 +168,7 @@ public abstract class AbstractSecurityToken implements SecurityToken {
    * @param expiresAt When this token expires, in seconds since epoch.
    * @return This security token.
    */
-  public AbstractSecurityToken setExpiresAt(long expiresAt) {
+  public AbstractSecurityToken setExpiresAt(Long expiresAt) {
     this.expiresAt = expiresAt;
     return this;
   }

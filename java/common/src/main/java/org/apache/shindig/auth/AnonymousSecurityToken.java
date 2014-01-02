@@ -67,7 +67,7 @@ public class AnonymousSecurityToken extends AbstractSecurityToken implements Sec
 
   // Anon Security Tokens have no need to expire
   @Override
-  public AbstractSecurityToken setExpiresAt(long expiresAt) {
+  public AbstractSecurityToken setExpiresAt(Long expiresAt) {
     return this;
   }
 

@@ -230,9 +230,9 @@ SecurityToken setOwnerId(String ownerId);
 
 SecurityToken setTrustedJson(String trustedJson);
 
-SecurityToken setExpiresAt(long expiresAt);
+SecurityToken setExpiresAt(Long expiresAt);
 
-SecurityToken setModuleId(long moduleId);
+SecurityToken setModuleId(Long moduleId);
 
 SecurityToken setAppUrl(String appUrl);
 
